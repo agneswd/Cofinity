@@ -1,0 +1,155 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  min-height: 100vh;
+}
+
+.session-list-panel,
+.session-detail-panel {
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.session-list-panel {
+  border-right: 1px solid var(--vscode-panel-border);
+  background: color-mix(in srgb, var(--vscode-sideBar-background) 90%, transparent);
+}
+
+.panel-heading {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 12px;
+}
+
+.empty-state {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--vscode-descriptionForeground);
+}
+
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-card {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--vscode-editorWidget-background);
+  cursor: pointer;
+}
+
+.session-card.is-selected {
+  border-color: var(--vscode-focusBorder);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+}
+
+.session-card-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.session-card-meta {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.session-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-block {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--vscode-editorWidget-background);
+}
+
+.detail-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-textarea,
+.detail-input {
+  width: 100%;
+  min-height: 92px;
+  box-sizing: border-box;
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  resize: vertical;
+}
+
+.detail-input {
+  min-height: 40px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-button {
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+}
+
+.detail-button.secondary {
+  background: transparent;
+  color: var(--vscode-foreground);
+  border-color: var(--vscode-panel-border);
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.queue-item {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 8px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--vscode-editorWidget-background) 80%, transparent);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
+  margin-bottom: 8px;
+}

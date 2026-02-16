@@ -1,0 +1,107 @@
+{
+  "name": "cofinity",
+  "displayName": "Cofinity",
+  "description": "Multi-session human-in-the-loop workflow management for GitHub Copilot tool loops.",
+  "version": "0.0.1",
+  "publisher": "master",
+  "private": true,
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguageModelTool:cofinity_request_input",
+    "onView:cofinity.sessionManagerView",
+    "onCommand:cofinity.openSessionManager"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cofinity.openSessionManager",
+        "title": "Open Session Manager",
+        "category": "Cofinity"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cofinity",
+          "title": "Cofinity",
+          "icon": "media/cofinity.svg"
+        }
+      ]
+    },
+    "views": {
+      "cofinity": [
+        {
+          "id": "cofinity.sessionManagerView",
+          "name": "Session Manager",
+          "type": "webview"
+        }
+      ]
+    },
+    "languageModelTools": [
+      {
+        "name": "cofinity_request_input",
+        "displayName": "Cofinity Request Input",
+        "userDescription": "Requests the user's next instruction, approval, or clarification for a Cofinity-managed session.",
+        "modelDescription": "Use this tool to request the user's next instruction, approval, clarification, or queued prompt for an existing Cofinity session. Reuse the returned sessionId on later calls. If work remains after processing the response, call this tool again with the same sessionId.",
+        "tags": [
+          "cofinity",
+          "workflow",
+          "human-in-the-loop"
+        ],
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sessionId": {
+              "type": "string",
+              "description": "The existing Cofinity session identifier. Reuse the exact sessionId returned by the previous tool call when continuing the same workflow."
+            },
+            "question": {
+              "type": "string",
+              "description": "The question or next-step request that should be shown to the user."
+            },
+            "requestKind": {
+              "type": "string",
+              "description": "Optional hint for how the request should be presented.",
+              "enum": [
+                "question",
+                "approval",
+                "pick",
+                "freeform"
+              ]
+            },
+            "options": {
+              "type": "array",
+              "description": "Optional list of choices for a pick-style request.",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "question"
+          ]
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "compile": "npm run build",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/vscode": "^1.104.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.2"
+  }
+}
