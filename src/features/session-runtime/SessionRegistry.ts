@@ -1,13 +1,14 @@
 import * as vscode from 'vscode';
 import { createSessionId } from '../../shared/ids';
 import type { CofinityRequestInputResult } from '../cofinity-tool/cofinityToolResult';
+import type { PersistedSessionRecord } from './storage/SessionPersistence';
 import {
   toSessionListItemSnapshot,
   toSessionSnapshot,
   type SessionManagerSnapshot,
   type SessionSnapshot
 } from './sessionSnapshot';
-import { SessionController } from './SessionController';
+import { SessionController, type SessionRestoreState } from './SessionController';
 import { SessionTokenRouter } from './SessionTokenRouter';
 import type { SessionId, SessionRequestKind } from './sessionTypes';
 
@@ -152,6 +153,72 @@ export class SessionRegistry implements vscode.Disposable {
     return true;
   }
 
+  public disposeIdleSessions(maxIdleMs: number): number {
+    const now = Date.now();
+    const disposableIds: SessionId[] = [];
+
+    for (const [sessionId, controller] of this.controllers.entries()) {
+      const { state } = controller;
+
+      if (state.pendingRequest || state.inflight) {
+        continue;
+      }
+
+      if (now - state.lastActiveAtMs < maxIdleMs) {
+        continue;
+      }
+
+      disposableIds.push(sessionId);
+    }
+
+    for (const sessionId of disposableIds) {
+      this.disposeSession(sessionId);
+    }
+
+    return disposableIds.length;
+  }
+
+  public exportPersistedSessions(): PersistedSessionRecord[] {
+    return Array.from(this.controllers.values())
+      .map((controller) => controller.state)
+      .filter((state) => state.status !== 'disposed')
+      .map((state) => ({
+        sessionId: state.sessionId,
+        createdAtMs: state.createdAtMs,
+        lastActiveAtMs: state.lastActiveAtMs,
+        title: state.title,
+        status: state.status,
+        promptQueue: state.promptQueue,
+        autopilot: state.autopilot,
+        history: state.history,
+        stats: state.stats
+      }));
+  }
+
+  public restoreSessions(records: PersistedSessionRecord[]): void {
+    for (const record of records) {
+      if (this.controllers.has(record.sessionId)) {
+        continue;
+      }
+
+      const controller = new SessionController(record.sessionId, record.title);
+      controller.restore(this.toRestoreState(record));
+
+      const disposable = controller.onDidChangeState(() => {
+        this.onDidChangeStateEmitter.fire();
+      });
+
+      this.controllers.set(record.sessionId, controller);
+      this.controllerDisposables.set(record.sessionId, disposable);
+    }
+
+    if (!this.selectedSessionId) {
+      this.selectedSessionId = this.buildManagerSnapshot().sessions[0]?.sessionId ?? null;
+    }
+
+    this.onDidChangeStateEmitter.fire();
+  }
+
   public dispose(): void {
     for (const disposable of this.controllerDisposables.values()) {
       disposable.dispose();
@@ -209,5 +276,18 @@ export class SessionRegistry implements vscode.Disposable {
     }
 
     this.selectedSessionId = sessionId;
+  }
+
+  private toRestoreState(record: PersistedSessionRecord): SessionRestoreState {
+    return {
+      createdAtMs: record.createdAtMs,
+      lastActiveAtMs: record.lastActiveAtMs,
+      title: record.title,
+      status: record.status,
+      promptQueue: record.promptQueue,
+      autopilot: record.autopilot,
+      history: record.history,
+      stats: record.stats
+    };
   }
 }

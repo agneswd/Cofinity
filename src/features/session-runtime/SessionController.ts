@@ -4,6 +4,7 @@ import type { CofinityRequestInputResult } from '../cofinity-tool/cofinityToolRe
 import { Deferred } from './Deferred';
 import { Mutex } from './Mutex';
 import type {
+  AutopilotState,
   PendingUserRequest,
   PromptQueueItem,
   SessionEvent,
@@ -17,6 +18,17 @@ export interface RunRequestOptions {
   requestKind: SessionRequestKind;
   options?: string[];
   token: vscode.CancellationToken;
+}
+
+export interface SessionRestoreState {
+  createdAtMs: number;
+  lastActiveAtMs: number;
+  title: string;
+  status: SessionState['status'];
+  promptQueue: PromptQueueItem[];
+  autopilot: AutopilotState;
+  history: SessionEvent[];
+  stats: SessionState['stats'];
 }
 
 export class SessionController implements vscode.Disposable {
@@ -59,6 +71,19 @@ export class SessionController implements vscode.Disposable {
 
   public get state(): SessionState {
     return this.sessionState;
+  }
+
+  public restore(summary: SessionRestoreState): void {
+    this.sessionState.createdAtMs = summary.createdAtMs;
+    this.sessionState.lastActiveAtMs = summary.lastActiveAtMs;
+    this.sessionState.title = summary.title;
+    this.sessionState.status = summary.status;
+    this.sessionState.promptQueue = summary.promptQueue;
+    this.sessionState.autopilot = summary.autopilot;
+    this.sessionState.history = summary.history;
+    this.sessionState.stats = summary.stats;
+    this.sessionState.pendingRequest = null;
+    this.sessionState.inflight = null;
   }
 
   public async runRequest(options: RunRequestOptions): Promise<CofinityRequestInputResult> {

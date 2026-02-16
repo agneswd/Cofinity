@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { registerCofinityTool } from './features/cofinity-tool/registerCofinityTool';
+import { SessionCleanup } from './features/session-runtime/lifecycle/SessionCleanup';
 import { SessionRegistry } from './features/session-runtime/SessionRegistry';
+import { SessionPersistence } from './features/session-runtime/storage/SessionPersistence';
 import { SessionManagerViewProvider } from './features/session-manager-view/SessionManagerViewProvider';
 import { SessionManagerStateBridge } from './features/session-manager-view/sessionManagerStateBridge';
 
@@ -11,6 +13,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const registry = new SessionRegistry();
   const provider = new SessionManagerViewProvider(context.extensionUri, registry);
   const bridge = new SessionManagerStateBridge(registry, provider);
+  const persistence = new SessionPersistence(context, registry);
+  const cleanup = new SessionCleanup(registry);
 
   sessionManagerViewProvider = provider;
   sessionRegistry = registry;
@@ -19,7 +23,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.registerWebviewViewProvider(SessionManagerViewProvider.viewType, provider),
     provider,
     registry,
-    bridge
+    bridge,
+    persistence,
+    cleanup
   );
 
   context.subscriptions.push(
@@ -29,6 +35,9 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   registerCofinityTool(context, registry);
+  void persistence.restore().then(() => {
+    bridge.sync();
+  });
 }
 
 export function deactivate(): void {
