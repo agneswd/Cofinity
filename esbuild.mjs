@@ -6,10 +6,20 @@ const sourcemap = true;
 async function buildExtension() {
   const context = await esbuild.context({
     bundle: true,
-    entryPoints: ['src/extension.ts'],
-    external: ['vscode'],
+    entryPoints: {
+      extension: 'src/extension.ts',
+      'test/runTest': 'src/test/runTest.ts',
+      'test/suite/index': 'src/test/suite/index.ts'
+    },
+    external: [
+      'vscode',
+      '@vscode/test-electron',
+      'glob',
+      'mocha',
+      'ts-node/register/transpile-only'
+    ],
     format: 'cjs',
-    outfile: 'dist/extension.js',
+    outdir: 'dist',
     platform: 'node',
     sourcemap,
     target: 'node18'
