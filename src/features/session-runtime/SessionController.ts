@@ -54,6 +54,7 @@ export class SessionController implements vscode.Disposable {
       promptQueue: [],
       autopilot: {
         mode: 'off',
+        maxTurns: 20,
         turnsUsed: 0
       },
       history: [],
@@ -124,6 +125,7 @@ export class SessionController implements vscode.Disposable {
 
   public setAutopilotEnabled(enabled: boolean): void {
     this.sessionState.autopilot.mode = enabled ? 'drainQueue' : 'off';
+    this.sessionState.autopilot.maxTurns ??= 20;
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
     this.onDidChangeStateEmitter.fire();
   }
@@ -160,15 +162,25 @@ export class SessionController implements vscode.Disposable {
     this.onDidChangeStateEmitter.fire();
 
     try {
-      const queuedPrompt = this.takeQueuedPrompt();
-      if (queuedPrompt) {
-        return {
-          sessionId: this.sessionState.sessionId,
-          response: queuedPrompt.content,
-          source: 'queue',
-          queuedRemaining: this.sessionState.promptQueue.length,
-          waiting: false
-        };
+      if (this.autopilotLimitReached()) {
+        this.pushHistory('autopilotUsed', 'Autopilot paused because the turn limit was reached.');
+      } else {
+        const queuedPrompt = this.takeQueuedPrompt();
+        if (queuedPrompt) {
+          const source = this.sessionState.autopilot.mode === 'drainQueue' ? 'autopilot' : 'queue';
+          if (source === 'autopilot') {
+            this.sessionState.autopilot.turnsUsed += 1;
+            this.pushHistory('autopilotUsed', 'Autopilot drained the next queued prompt.');
+          }
+
+          return {
+            sessionId: this.sessionState.sessionId,
+            response: queuedPrompt.content,
+            source,
+            queuedRemaining: this.sessionState.promptQueue.length,
+            waiting: false
+          };
+        }
       }
 
       return await this.awaitManualResponse(options);
@@ -243,6 +255,19 @@ export class SessionController implements vscode.Disposable {
     this.pushHistory('queueItemReleased', 'Released a queued prompt to the tool caller.');
     this.touch('active');
     return next;
+  }
+
+  private autopilotLimitReached(): boolean {
+    if (this.sessionState.autopilot.mode !== 'drainQueue') {
+      return false;
+    }
+
+    const maxTurns = this.sessionState.autopilot.maxTurns;
+    if (!maxTurns) {
+      return false;
+    }
+
+    return this.sessionState.autopilot.turnsUsed >= maxTurns;
   }
 
   private rejectPending(reason: Error): void {

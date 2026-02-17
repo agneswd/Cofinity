@@ -1,6 +1,7 @@
 import type {
   PendingUserRequest,
   SessionId,
+  SessionEvent,
   SessionState,
   SessionStatus
 } from './sessionTypes';
@@ -28,6 +29,10 @@ export interface SessionSnapshot {
   queuedPrompts: QueuedPromptSnapshot[];
   pendingRequest: PendingUserRequest | null;
   autopilotMode: SessionState['autopilot']['mode'];
+  autopilotTurnsUsed: number;
+  autopilotMaxTurns?: number;
+  history: SessionEvent[];
+  stats: SessionState['stats'];
   lastActiveAtMs: number;
 }
 
@@ -60,6 +65,10 @@ export function toSessionSnapshot(state: SessionState): SessionSnapshot {
     })),
     pendingRequest: state.pendingRequest,
     autopilotMode: state.autopilot.mode,
+    autopilotTurnsUsed: state.autopilot.turnsUsed,
+    autopilotMaxTurns: state.autopilot.maxTurns,
+    history: state.history,
+    stats: state.stats,
     lastActiveAtMs: state.lastActiveAtMs
   };
 }

@@ -35,6 +35,19 @@ type SessionSnapshotPayload = {
       createdAtMs: number;
     };
     autopilotMode: 'off' | 'drainQueue';
+    autopilotTurnsUsed: number;
+    autopilotMaxTurns?: number;
+    history: Array<{
+      eventId: string;
+      atMs: number;
+      kind: string;
+      summary: string;
+    }>;
+    stats: {
+      toolCalls: number;
+      userResponses: number;
+      cancellations: number;
+    };
     lastActiveAtMs: number;
   } | null;
 };
@@ -149,6 +162,34 @@ function renderSession(payload: SessionSnapshotPayload): void {
         <input id="autopilot-checkbox" type="checkbox" ${payload.session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
         <span>Drain queue on the next tool call</span>
       </label>
+      <div class="session-card-meta">
+        Turns used ${payload.session.autopilotTurnsUsed}${payload.session.autopilotMaxTurns ? ` / ${payload.session.autopilotMaxTurns}` : ''}
+      </div>
+    </div>
+    <div class="detail-block">
+      <div class="detail-label">Stats</div>
+      <div class="session-card-meta">
+        tool calls ${payload.session.stats.toolCalls} · user responses ${payload.session.stats.userResponses} · cancellations ${payload.session.stats.cancellations}
+      </div>
+    </div>
+    <div class="detail-block">
+      <div class="detail-label">Recent History</div>
+      <div class="history-list">
+        ${payload.session.history.length > 0
+          ? payload.session.history
+              .slice(0, 10)
+              .map((item) => {
+                const timestamp = new Date(item.atMs).toLocaleTimeString();
+                return `
+                  <div class="history-item">
+                    <div class="history-item-summary">${item.summary}</div>
+                    <div class="history-item-meta">${item.kind} · ${timestamp}</div>
+                  </div>
+                `;
+              })
+              .join('')
+          : '<div class="empty-state">No events recorded for this session yet.</div>'}
+      </div>
     </div>
     <div class="detail-block">
       <div class="detail-label">Session Actions</div>

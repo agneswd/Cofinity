@@ -140,6 +140,27 @@ body {
   background: color-mix(in srgb, var(--vscode-editorWidget-background) 80%, transparent);
 }
 
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  border-left: 2px solid var(--vscode-textLink-foreground);
+  padding-left: 10px;
+}
+
+.history-item-summary {
+  font-size: 12px;
+}
+
+.history-item-meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
 .toggle-row {
   display: flex;
   align-items: center;
