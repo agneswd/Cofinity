@@ -4,6 +4,8 @@ Cofinity is a TypeScript VS Code extension for GitHub Copilot that adds a multi-
 
 The current implementation is built around one language model tool, `cofinity_request_input`, and an Activity Bar session manager that keeps concurrent sessions isolated instead of collapsing them into one shared queue or one shared pending prompt.
 
+To reference the tool manually in prompt attachments, use `#cofinity`.
+
 ## Current capabilities
 
 - concurrent session isolation with a per-session runtime model
