@@ -58,11 +58,8 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
     }
 
     if (isUiReadyMessage(message)) {
-      this.postSessionsSnapshot({
-        selectedSessionId: null,
-        sessions: []
-      });
-      this.postSessionSnapshot(null);
+      this.postSessionsSnapshot(this.sessionRegistry.buildManagerSnapshot());
+      this.postSessionSnapshot(this.sessionRegistry.getSelectedSessionSnapshot());
       return;
     }
 

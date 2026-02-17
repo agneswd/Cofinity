@@ -68,13 +68,12 @@ function renderSessions(payload: SessionsSnapshotPayload): void {
   sessionsListElement.innerHTML = payload.sessions
     .map((session) => {
       return `
-        <div class="session-card" data-session-id="${session.sessionId}">
-          <div class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''}" data-session-id="${session.sessionId}">
-            <div class="session-card-title">${session.title}</div>
-            <div class="session-card-meta">
-              ${session.status} · queued ${session.queuedCount} · pending ${String(session.hasPendingRequest)}
-            </div>
+        <div class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''}" data-session-id="${session.sessionId}">
+          <div class="session-card-title">${session.title}</div>
+          <div class="session-card-meta">
+            ${session.status} · queued ${session.queuedCount} · pending ${String(session.hasPendingRequest)}
           </div>
+        </div>
       `;
     })
     .join('');
