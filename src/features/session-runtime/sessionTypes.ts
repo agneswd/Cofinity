@@ -15,8 +15,26 @@ export interface PromptQueueItem {
   itemId: string;
   content: string;
   source: 'user' | 'system';
+  chatMessageId: string;
   enqueuedAtMs: number;
   status: 'queued' | 'sentToModel' | 'skipped';
+}
+
+export type SessionChatMessageRole = 'assistant' | 'user' | 'system';
+export type SessionChatMessageState = 'pending' | 'queued' | 'delivered' | 'skipped';
+
+export interface SessionChatMessage {
+  messageId: string;
+  role: SessionChatMessageRole;
+  content: string;
+  state: SessionChatMessageState;
+  createdAtMs: number;
+  relatedRequestId?: string;
+}
+
+export interface SessionSettings {
+  notificationSoundEnabled: boolean;
+  autoQueuePrompts: boolean;
 }
 
 export interface AutopilotState {
@@ -64,6 +82,8 @@ export interface SessionState {
   inflight: InflightInvocation | null;
   pendingRequest: PendingUserRequest | null;
   promptQueue: PromptQueueItem[];
+  chatMessages: SessionChatMessage[];
+  settings: SessionSettings;
   autopilot: AutopilotState;
   history: SessionEvent[];
   stats: {

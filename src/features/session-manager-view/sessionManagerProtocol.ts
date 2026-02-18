@@ -18,8 +18,9 @@ export type ExtensionToWebviewMessage =
 export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
-  | ProtocolEnvelope<'respondToRequest', { requestId: string; response: string }>
-  | ProtocolEnvelope<'enqueuePrompt', { content: string }>
+  | ProtocolEnvelope<'submitComposerInput', { content: string }>
   | ProtocolEnvelope<'toggleAutopilot', { enabled: boolean }>
+  | ProtocolEnvelope<'setAutopilotMaxTurns', { maxTurns: number }>
+  | ProtocolEnvelope<'updateSessionSettings', { notificationSoundEnabled: boolean; autoQueuePrompts: boolean }>
   | ProtocolEnvelope<'disposeSession', Record<string, never>>
   | ProtocolEnvelope<'clearQueue', Record<string, never>>;

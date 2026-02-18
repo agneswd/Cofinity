@@ -9,3 +9,7 @@ export function createRequestId(): string {
 export function createEventId(): string {
   return `event_${crypto.randomUUID()}`;
 }
+
+export function createMessageId(): string {
+  return `message_${crypto.randomUUID()}`;
+}

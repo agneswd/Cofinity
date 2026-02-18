@@ -67,24 +67,40 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       case 'selectSession':
         this.sessionRegistry.selectSession(message.payload.sessionId);
         return;
-      case 'respondToRequest':
+      case 'submitComposerInput': {
         if (!message.sessionId) {
-          this.postError('Missing sessionId for respondToRequest.');
+          this.postError('Missing sessionId for submitComposerInput.');
           return;
         }
-        if (!this.sessionRegistry.respondToPendingRequest(message.sessionId, message.payload.requestId, message.payload.response)) {
-          this.postError('Failed to resolve pending request. The request may be stale.');
-        }
-        return;
-      case 'enqueuePrompt':
-        if (!message.sessionId) {
-          this.postError('Missing sessionId for enqueuePrompt.');
+
+        const session = this.sessionRegistry.getSessionSnapshot(message.sessionId);
+        if (!session) {
+          this.postError('Failed to find the selected session.');
           return;
         }
-        if (!this.sessionRegistry.enqueuePrompt(message.sessionId, message.payload.content)) {
-          this.postError('Failed to enqueue prompt for the selected session.');
+
+        const content = message.payload.content.trim();
+        if (!content) {
+          return;
+        }
+
+        if (session.pendingRequest) {
+          if (!this.sessionRegistry.respondToPendingRequest(message.sessionId, session.pendingRequest.requestId, content)) {
+            this.postError('Failed to resolve pending request. The request may be stale.');
+          }
+          return;
+        }
+
+        if (!session.settings.autoQueuePrompts) {
+          this.postError('Auto queue is disabled for this session. Turn it back on from the settings menu to queue prompts while the agent is not waiting.');
+          return;
+        }
+
+        if (!this.sessionRegistry.enqueuePrompt(message.sessionId, content)) {
+          this.postError('Failed to queue the prompt for the selected session.');
         }
         return;
+      }
       case 'toggleAutopilot':
         if (!message.sessionId) {
           this.postError('Missing sessionId for toggleAutopilot.');
@@ -92,6 +108,24 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
         }
         if (!this.sessionRegistry.setAutopilotEnabled(message.sessionId, message.payload.enabled)) {
           this.postError('Failed to update autopilot for the selected session.');
+        }
+        return;
+      case 'setAutopilotMaxTurns':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for setAutopilotMaxTurns.');
+          return;
+        }
+        if (!this.sessionRegistry.setAutopilotMaxTurns(message.sessionId, message.payload.maxTurns)) {
+          this.postError('Failed to update autopilot turn limits for the selected session.');
+        }
+        return;
+      case 'updateSessionSettings':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for updateSessionSettings.');
+          return;
+        }
+        if (!this.sessionRegistry.updateSettings(message.sessionId, message.payload)) {
+          this.postError('Failed to update settings for the selected session.');
         }
         return;
       case 'clearQueue':

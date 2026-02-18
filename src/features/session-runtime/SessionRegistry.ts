@@ -10,7 +10,7 @@ import {
 } from './sessionSnapshot';
 import { SessionController, type SessionRestoreState } from './SessionController';
 import { SessionTokenRouter } from './SessionTokenRouter';
-import type { SessionId, SessionRequestKind } from './sessionTypes';
+import type { SessionId, SessionRequestKind, SessionSettings } from './sessionTypes';
 
 export interface HandleToolInvocationOptions {
   sessionId?: string;
@@ -85,6 +85,11 @@ export class SessionRegistry implements vscode.Disposable {
     return controller ? toSessionSnapshot(controller.state) : null;
   }
 
+  public getSessionSnapshot(sessionId: SessionId): SessionSnapshot | null {
+    const controller = this.controllers.get(sessionId);
+    return controller ? toSessionSnapshot(controller.state) : null;
+  }
+
   public selectSession(sessionId: SessionId | null): void {
     if (sessionId !== null && !this.controllers.has(sessionId)) {
       return;
@@ -130,6 +135,29 @@ export class SessionRegistry implements vscode.Disposable {
     }
 
     controller.setAutopilotEnabled(enabled);
+    return true;
+  }
+
+  public setAutopilotMaxTurns(sessionId: SessionId, maxTurns: number): boolean {
+    const controller = this.controllers.get(sessionId);
+    if (!controller) {
+      return false;
+    }
+
+    controller.setAutopilotMaxTurns(maxTurns);
+    return true;
+  }
+
+  public updateSettings(
+    sessionId: SessionId,
+    settings: Partial<SessionSettings>
+  ): boolean {
+    const controller = this.controllers.get(sessionId);
+    if (!controller) {
+      return false;
+    }
+
+    controller.updateSettings(settings);
     return true;
   }
 
@@ -189,6 +217,8 @@ export class SessionRegistry implements vscode.Disposable {
         title: state.title,
         status: state.status,
         promptQueue: state.promptQueue,
+        chatMessages: state.chatMessages,
+        settings: state.settings,
         autopilot: state.autopilot,
         history: state.history,
         stats: state.stats
@@ -285,6 +315,8 @@ export class SessionRegistry implements vscode.Disposable {
       title: record.title,
       status: record.status,
       promptQueue: record.promptQueue,
+      chatMessages: record.chatMessages,
+      settings: record.settings,
       autopilot: record.autopilot,
       history: record.history,
       stats: record.stats

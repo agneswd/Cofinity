@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { createEventId, createRequestId } from '../../shared/ids';
+import { createEventId, createMessageId, createRequestId } from '../../shared/ids';
 import type { CofinityRequestInputResult } from '../cofinity-tool/cofinityToolResult';
 import { Deferred } from './Deferred';
 import { Mutex } from './Mutex';
@@ -7,9 +7,11 @@ import type {
   AutopilotState,
   PendingUserRequest,
   PromptQueueItem,
+  SessionChatMessage,
   SessionEvent,
   SessionId,
   SessionRequestKind,
+  SessionSettings,
   SessionState
 } from './sessionTypes';
 
@@ -26,6 +28,8 @@ export interface SessionRestoreState {
   title: string;
   status: SessionState['status'];
   promptQueue: PromptQueueItem[];
+  chatMessages: SessionChatMessage[];
+  settings: SessionSettings;
   autopilot: AutopilotState;
   history: SessionEvent[];
   stats: SessionState['stats'];
@@ -52,6 +56,11 @@ export class SessionController implements vscode.Disposable {
       inflight: null,
       pendingRequest: null,
       promptQueue: [],
+      chatMessages: [],
+      settings: {
+        notificationSoundEnabled: true,
+        autoQueuePrompts: true
+      },
       autopilot: {
         mode: 'off',
         maxTurns: 20,
@@ -80,6 +89,8 @@ export class SessionController implements vscode.Disposable {
     this.sessionState.title = summary.title;
     this.sessionState.status = summary.status;
     this.sessionState.promptQueue = summary.promptQueue;
+    this.sessionState.chatMessages = summary.chatMessages;
+    this.sessionState.settings = summary.settings;
     this.sessionState.autopilot = summary.autopilot;
     this.sessionState.history = summary.history;
     this.sessionState.stats = summary.stats;
@@ -98,15 +109,24 @@ export class SessionController implements vscode.Disposable {
       return;
     }
 
+    const chatMessageId = createMessageId();
     const item: PromptQueueItem = {
       itemId: createRequestId(),
       content: trimmed,
       source: 'user',
+      chatMessageId,
       enqueuedAtMs: Date.now(),
       status: 'queued'
     };
 
     this.sessionState.promptQueue.push(item);
+    this.appendChatMessage({
+      messageId: chatMessageId,
+      role: 'user',
+      content: trimmed,
+      state: 'queued',
+      createdAtMs: item.enqueuedAtMs
+    });
     this.touch('active');
     this.pushHistory('queueItemAdded', 'Queued a prompt for the next tool call.');
     this.onDidChangeStateEmitter.fire();
@@ -117,6 +137,9 @@ export class SessionController implements vscode.Disposable {
       return;
     }
 
+    this.sessionState.promptQueue.forEach((item) => {
+      this.updateChatMessageState(item.chatMessageId, 'skipped');
+    });
     this.sessionState.promptQueue = [];
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
     this.pushHistory('queueItemReleased', 'Cleared all queued prompts.');
@@ -126,6 +149,25 @@ export class SessionController implements vscode.Disposable {
   public setAutopilotEnabled(enabled: boolean): void {
     this.sessionState.autopilot.mode = enabled ? 'drainQueue' : 'off';
     this.sessionState.autopilot.maxTurns ??= 20;
+    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.onDidChangeStateEmitter.fire();
+  }
+
+  public updateSettings(settings: Partial<SessionSettings>): void {
+    this.sessionState.settings = {
+      ...this.sessionState.settings,
+      ...settings
+    };
+    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.onDidChangeStateEmitter.fire();
+  }
+
+  public setAutopilotMaxTurns(maxTurns: number): void {
+    const normalized = Math.max(1, Math.min(100, Math.floor(maxTurns)));
+    this.sessionState.autopilot.maxTurns = normalized;
+    if (this.sessionState.autopilot.turnsUsed > normalized) {
+      this.sessionState.autopilot.turnsUsed = normalized;
+    }
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
     this.onDidChangeStateEmitter.fire();
   }
@@ -207,6 +249,14 @@ export class SessionController implements vscode.Disposable {
     };
 
     this.sessionState.pendingRequest = pendingRequest;
+    this.appendChatMessage({
+      messageId: createMessageId(),
+      role: 'assistant',
+      content: pendingRequest.prompt,
+      state: 'pending',
+      createdAtMs: pendingRequest.createdAtMs,
+      relatedRequestId: pendingRequest.requestId
+    });
     this.pendingResponse = new Deferred<string>();
     this.pendingCancellation = options.token.onCancellationRequested(() => {
       this.sessionState.stats.cancellations += 1;
@@ -226,6 +276,15 @@ export class SessionController implements vscode.Disposable {
     try {
       const response = await this.pendingResponse.promise;
       this.sessionState.stats.userResponses += 1;
+      this.markRequestMessageResolved(pendingRequest.requestId);
+      this.appendChatMessage({
+        messageId: createMessageId(),
+        role: 'user',
+        content: response,
+        state: 'delivered',
+        createdAtMs: Date.now(),
+        relatedRequestId: pendingRequest.requestId
+      });
       this.pushHistory('userResponded', 'Resolved a pending user request.');
 
       return {
@@ -252,6 +311,7 @@ export class SessionController implements vscode.Disposable {
     }
 
     next.status = 'sentToModel';
+    this.updateChatMessageState(next.chatMessageId, 'delivered');
     this.pushHistory('queueItemReleased', 'Released a queued prompt to the tool caller.');
     this.touch('active');
     return next;
@@ -292,5 +352,35 @@ export class SessionController implements vscode.Disposable {
     };
 
     this.sessionState.history = [event, ...this.sessionState.history].slice(0, 50);
+  }
+
+  private appendChatMessage(message: SessionChatMessage): void {
+    this.sessionState.chatMessages = [...this.sessionState.chatMessages, message].slice(-200);
+  }
+
+  private updateChatMessageState(messageId: string, state: SessionChatMessage['state']): void {
+    this.sessionState.chatMessages = this.sessionState.chatMessages.map((message) => {
+      if (message.messageId !== messageId) {
+        return message;
+      }
+
+      return {
+        ...message,
+        state
+      };
+    });
+  }
+
+  private markRequestMessageResolved(requestId: string): void {
+    this.sessionState.chatMessages = this.sessionState.chatMessages.map((message) => {
+      if (message.role !== 'assistant' || message.relatedRequestId !== requestId) {
+        return message;
+      }
+
+      return {
+        ...message,
+        state: 'delivered'
+      };
+    });
   }
 }

@@ -116,6 +116,58 @@ suite('SessionRegistry', () => {
     assert.equal(queuedResult.source, 'queue');
     assert.equal(queuedResult.response, 'queued follow up');
     assert.equal(queuedResult.queuedRemaining, 0);
+
+    registry.selectSession(sessionId);
+    const detailAfterRelease = registry.getSelectedSessionSnapshot();
+    assert.equal(detailAfterRelease?.chatMessages.at(-1)?.content, 'queued follow up');
+    assert.equal(detailAfterRelease?.chatMessages.at(-1)?.state, 'delivered');
+  });
+
+  test('persists settings and marks cleared queued messages as skipped', async () => {
+    const token = new vscode.CancellationTokenSource();
+
+    const initialRequest = registry.handleToolInvocation({
+      question: 'settings and queue behavior',
+      requestKind: 'question',
+      token: token.token
+    });
+
+    await waitFor(() => registry.buildManagerSnapshot().sessions.length === 1);
+    const sessionId = registry.buildManagerSnapshot().sessions[0].sessionId;
+
+    registry.selectSession(sessionId);
+    const detail = registry.getSelectedSessionSnapshot();
+    assert.ok(detail?.pendingRequest);
+    registry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'ack');
+    await initialRequest;
+
+    registry.updateSettings(sessionId, {
+      notificationSoundEnabled: false,
+      autoQueuePrompts: false
+    });
+    registry.enqueuePrompt(sessionId, 'queued then cleared');
+    registry.clearQueue(sessionId);
+
+    registry.selectSession(sessionId);
+    const updatedDetail = registry.getSelectedSessionSnapshot();
+    assert.equal(updatedDetail?.settings.notificationSoundEnabled, false);
+    assert.equal(updatedDetail?.settings.autoQueuePrompts, false);
+    assert.equal(updatedDetail?.chatMessages.at(-1)?.state, 'skipped');
+
+    const restoredRegistry = new SessionRegistry();
+
+    try {
+      restoredRegistry.restoreSessions(registry.exportPersistedSessions());
+      const restoredSnapshot = restoredRegistry.buildManagerSnapshot();
+      restoredRegistry.selectSession(restoredSnapshot.sessions[0].sessionId);
+      const restoredDetail = restoredRegistry.getSelectedSessionSnapshot();
+
+      assert.equal(restoredDetail?.settings.notificationSoundEnabled, false);
+      assert.equal(restoredDetail?.settings.autoQueuePrompts, false);
+      assert.equal(restoredDetail?.chatMessages.at(-1)?.state, 'skipped');
+    } finally {
+      restoredRegistry.dispose();
+    }
   });
 
   test('restores interrupted session summaries without restoring pending requests', async () => {
