@@ -128,6 +128,15 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
           this.postError('Failed to update settings for the selected session.');
         }
         return;
+      case 'renameSession':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for renameSession.');
+          return;
+        }
+        if (!this.sessionRegistry.renameSession(message.sessionId, message.payload.newTitle)) {
+          this.postError('Failed to rename the selected session.');
+        }
+        return;
       case 'clearQueue':
         if (!message.sessionId) {
           this.postError('Missing sessionId for clearQueue.');
@@ -176,6 +185,14 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
       type: 'error',
       payload: { message }
+    });
+  }
+
+  public openSettings(): void {
+    this.postMessage({
+      protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
+      type: 'openSettings',
+      payload: {}
     });
   }
 }

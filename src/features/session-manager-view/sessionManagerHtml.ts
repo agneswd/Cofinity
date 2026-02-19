@@ -40,6 +40,9 @@ export function buildSessionManagerHtml(
       </div>
     </main>
     <aside class="session-list-panel">
+      <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+        <span class="sidebar-toggle-icon">&#x276F;</span>
+      </button>
       <div class="panel-heading">Sessions</div>
       <div id="sessions-list" class="session-list empty-state">No active sessions yet.</div>
     </aside>

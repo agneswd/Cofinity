@@ -11,19 +11,17 @@ function settingsIcon(): string {
 
 function renderChatMessages(messages: SessionChatMessage[]): string {
   if (messages.length === 0) {
-    return '<div class="empty-state">No messages in this session yet.</div>';
+    return '<div class="empty-state">No messages yet.</div>';
   }
 
   return messages
     .map((message) => {
+      const stateLabel = messageStateLabel(message);
       return `
         <article class="chat-message role-${message.role}">
-          <div class="chat-message-body">
-            ${escapeHtml(message.content)}
-          </div>
+          <div class="chat-message-body">${escapeHtml(message.content)}</div>
           <div class="chat-message-meta">
-            <span>${escapeHtml(message.role)}</span>
-            <span>${escapeHtml(messageStateLabel(message))}</span>
+            <span>${escapeHtml(stateLabel)}</span>
             <span>${formatTime(message.createdAtMs)}</span>
           </div>
         </article>
@@ -57,81 +55,120 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
 
 export function renderSessionsList(sessions: SessionListItem[], selectedSessionId: string | null): string {
   if (sessions.length === 0) {
-    return 'No active sessions yet.';
+    return '<div class="empty-state">No active sessions.</div>';
   }
 
   return sessions
     .map((session) => {
+      const dotClass = session.hasPendingRequest ? 'is-pending' : session.status === 'active' ? 'is-active' : '';
+      const initials = escapeHtml(session.title.slice(0, 3));
       return `
-        <button class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''}" data-session-id="${session.sessionId}">
-          <div class="session-card-topline">
-            <div class="session-card-title">${escapeHtml(session.title)}</div>
-            <div class="status-chip">${escapeHtml(session.status)}</div>
+        <div class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''}" data-session-id="${session.sessionId}">
+          <!-- mini view (shown when sidebar is collapsed) -->
+          <button class="session-card-mini session-card-select" data-session-id="${session.sessionId}" title="${escapeHtml(session.title)}">
+            <div class="status-dot ${dotClass}"></div>
+            <span class="session-card-mini-label">${initials}</span>
+          </button>
+          <!-- full view -->
+          <button class="session-card-select" data-session-id="${session.sessionId}">
+            <div class="session-card-topline">
+              <div class="status-dot ${dotClass}"></div>
+              <div class="session-card-title">${escapeHtml(session.title)}</div>
+            </div>
+            <div class="session-card-meta">${escapeHtml(session.status)}${session.queuedCount > 0 ? ` · ${session.queuedCount} queued` : ''}</div>
+          </button>
+          <div class="session-card-actions">
+            <button class="session-action-btn" data-action="rename" data-session-id="${session.sessionId}" title="Rename session">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.23 1a1.1 1.1 0 0 1 .78.33l.66.66a1.1 1.1 0 0 1 0 1.56L5.5 12.73 2 14l1.27-3.5L12.45 1.33A1.1 1.1 0 0 1 13.23 1ZM3.5 11.5l-.5 1.5 1.5-.5 8.5-8.5-1-1L3.5 11.5Z"/></svg>
+            </button>
+            <button class="session-action-btn" data-action="dispose" data-session-id="${session.sessionId}" title="Dispose session">
+              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M7 3h2v1H7V3ZM3 5h10v1h-1v7H4V6H3V5Zm2 1v6h6V6H5Z"/></svg>
+            </button>
           </div>
-          <div class="session-card-meta">
-            queued ${session.queuedCount} · pending ${String(session.hasPendingRequest)}
-          </div>
-        </button>
+        </div>
       `;
     })
     .join('');
 }
 
 export function renderSessionDetail(session: SessionSnapshot, settingsOpen: boolean): string {
-  const composerHint = session.pendingRequest
-    ? 'Reply to the current agent request'
+  const hint = session.pendingRequest
+    ? 'Agent is waiting for your reply'
+    : session.queuedPrompts.length > 0
+      ? `${session.queuedPrompts.length} prompt${session.queuedPrompts.length > 1 ? 's' : ''} queued`
+      : null;
+
+  const composerPlaceholder = session.pendingRequest
+    ? 'Reply to agent'
     : session.settings.autoQueuePrompts
-      ? 'Send a prompt. It will queue until the agent asks for input.'
-      : 'Send a prompt to this session';
+      ? 'Will queue until agent asks for input'
+      : 'Send a prompt';
 
   return `
     <div class="chat-shell">
       <header class="chat-header">
-        <div>
-          <div class="chat-title">${escapeHtml(session.title)}</div>
-          <div class="chat-subtitle">
-            <span class="status-chip">${escapeHtml(session.status)}</span>
-            <span>tool calls ${session.stats.toolCalls}</span>
-            <span>queued ${session.queuedCount}</span>
+        <div class="chat-header-left">
+          <span class="chat-title">${escapeHtml(session.title)}</span>
+          <span class="status-chip">${escapeHtml(session.status)}</span>
+          <span class="chat-header-stats">${session.stats.toolCalls} calls${session.queuedCount > 0 ? ` · ${session.queuedCount} queued` : ''}</span>
+        </div>
+      </header>
+
+      <!-- Settings modal (opened by native VS Code gear button) -->
+      <div id="settings-modal-backdrop" class="settings-modal-backdrop ${settingsOpen ? '' : 'is-hidden'}">
+        <div class="settings-modal" role="dialog" aria-label="Session settings">
+          <div class="settings-modal-header">
+            <span>Session settings</span>
+            <button id="settings-modal-close" class="settings-modal-close" aria-label="Close">&times;</button>
+          </div>
+          <div class="settings-modal-body">
+            <label class="setting-row">
+              <span>Autopilot</span>
+              <input id="autopilot-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
+            </label>
+            <label class="setting-row">
+              <span>Turn limit</span>
+              <input id="autopilot-max-turns" class="setting-input" type="number" min="1" max="100" value="${session.autopilotMaxTurns ?? 20}" />
+            </label>
+            <label class="setting-row">
+              <span>Sound</span>
+              <input id="sound-checkbox" type="checkbox" ${session.settings.notificationSoundEnabled ? 'checked' : ''} />
+            </label>
+            <label class="setting-row">
+              <span>Auto-queue prompts</span>
+              <input id="auto-queue-checkbox" type="checkbox" ${session.settings.autoQueuePrompts ? 'checked' : ''} />
+            </label>
+            <label class="setting-row">
+              <span>Enter sends</span>
+              <input id="enter-sends-checkbox" type="checkbox" ${session.settings.enterSends ? 'checked' : ''} />
+            </label>
+          </div>
+          <div class="settings-modal-actions">
+            <button id="clear-queue-button" class="secondary-button">Clear queue</button>
+            <button id="dispose-session-button" class="secondary-button">Dispose</button>
           </div>
         </div>
-        <button id="settings-toggle" class="icon-button" aria-label="Open session settings">${settingsIcon()}</button>
-      </header>
-      <section class="settings-panel ${settingsOpen ? '' : 'is-hidden'}">
-        <div class="settings-grid">
-          <label class="setting-row">
-            <span>Autopilot</span>
-            <input id="autopilot-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
-          </label>
-          <label class="setting-row">
-            <span>Autopilot turn limit</span>
-            <input id="autopilot-max-turns" class="setting-input" type="number" min="1" max="100" value="${session.autopilotMaxTurns ?? 20}" />
-          </label>
-          <label class="setting-row">
-            <span>Notification sound</span>
-            <input id="sound-checkbox" type="checkbox" ${session.settings.notificationSoundEnabled ? 'checked' : ''} />
-          </label>
-          <label class="setting-row">
-            <span>Auto queue prompts</span>
-            <input id="auto-queue-checkbox" type="checkbox" ${session.settings.autoQueuePrompts ? 'checked' : ''} />
-          </label>
-        </div>
-        <div class="settings-actions">
-          <button id="clear-queue-button" class="secondary-button">Clear queue</button>
-          <button id="dispose-session-button" class="secondary-button">Dispose session</button>
-        </div>
-      </section>
+      </div>
+
       <section class="chat-transcript">
         ${renderChatMessages(session.chatMessages)}
       </section>
       ${renderQueuedPrompts(session)}
       <footer class="composer-shell">
-        <div class="composer-hint">${escapeHtml(composerHint)}</div>
+        ${hint ? `<div class="composer-hint">${escapeHtml(hint)}</div>` : ''}
         <div class="composer-row">
-          <textarea id="composer-textarea" class="composer-textarea" placeholder="${escapeHtml(composerHint)}"></textarea>
+          <textarea id="composer-textarea" class="composer-textarea" placeholder="${escapeHtml(composerPlaceholder)}"></textarea>
           <button id="send-button" class="composer-button">Send</button>
         </div>
       </footer>
+      <div class="autopilot-bar">
+        <span class="autopilot-bar-label">Autopilot</span>
+        <label class="autopilot-toggle">
+          <input id="autopilot-bar-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
+          <span class="autopilot-toggle-track"></span>
+          <span class="autopilot-toggle-thumb"></span>
+        </label>
+      </div>
     </div>
   `;
 }

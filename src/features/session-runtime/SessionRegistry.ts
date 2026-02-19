@@ -161,6 +161,16 @@ export class SessionRegistry implements vscode.Disposable {
     return true;
   }
 
+  public renameSession(sessionId: SessionId, newTitle: string): boolean {
+    const controller = this.controllers.get(sessionId);
+    if (!controller) {
+      return false;
+    }
+
+    controller.renameSession(newTitle);
+    return true;
+  }
+
   public disposeSession(sessionId: SessionId): boolean {
     const controller = this.controllers.get(sessionId);
     if (!controller) {

@@ -13,7 +13,8 @@ export interface ProtocolEnvelope<TType extends string, TPayload> {
 export type ExtensionToWebviewMessage =
   | ProtocolEnvelope<'sessionsSnapshot', SessionManagerSnapshot>
   | ProtocolEnvelope<'sessionSnapshot', { session: SessionSnapshot | null }>
-  | ProtocolEnvelope<'error', { message: string }>;
+  | ProtocolEnvelope<'error', { message: string }>
+  | ProtocolEnvelope<'openSettings', Record<string, never>>;
 
 export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
@@ -21,6 +22,7 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'submitComposerInput', { content: string }>
   | ProtocolEnvelope<'toggleAutopilot', { enabled: boolean }>
   | ProtocolEnvelope<'setAutopilotMaxTurns', { maxTurns: number }>
-  | ProtocolEnvelope<'updateSessionSettings', { notificationSoundEnabled: boolean; autoQueuePrompts: boolean }>
+  | ProtocolEnvelope<'updateSessionSettings', { notificationSoundEnabled: boolean; autoQueuePrompts: boolean; enterSends: boolean }>
+  | ProtocolEnvelope<'renameSession', { newTitle: string }>
   | ProtocolEnvelope<'disposeSession', Record<string, never>>
   | ProtocolEnvelope<'clearQueue', Record<string, never>>;

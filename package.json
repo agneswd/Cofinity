@@ -24,8 +24,23 @@
         "command": "cofinity.openSessionManager",
         "title": "Open Session Manager",
         "category": "Cofinity"
+      },
+      {
+        "command": "cofinity.openSessionSettings",
+        "title": "Session Settings",
+        "category": "Cofinity",
+        "icon": "$(gear)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "cofinity.openSessionSettings",
+          "when": "view == cofinity.sessionManagerView",
+          "group": "navigation"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -48,7 +63,7 @@
       {
         "name": "cofinity_request_input",
         "displayName": "Cofinity Request Input",
-        "toolReferenceName": "cofinity",
+        "toolReferenceName": "requestInput",
         "canBeReferencedInPrompt": true,
         "userDescription": "Requests the user's next instruction, approval, or clarification for a Cofinity-managed session.",
         "modelDescription": "Use this tool to request the user's next instruction, approval, clarification, or queued prompt for an existing Cofinity session. Reuse the returned sessionId on later calls. If work remains after processing the response, call this tool again with the same sessionId.",

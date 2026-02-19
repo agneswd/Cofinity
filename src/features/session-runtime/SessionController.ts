@@ -59,7 +59,8 @@ export class SessionController implements vscode.Disposable {
       chatMessages: [],
       settings: {
         notificationSoundEnabled: true,
-        autoQueuePrompts: true
+        autoQueuePrompts: true,
+        enterSends: false
       },
       autopilot: {
         mode: 'off',
@@ -159,6 +160,15 @@ export class SessionController implements vscode.Disposable {
       ...settings
     };
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.onDidChangeStateEmitter.fire();
+  }
+
+  public renameSession(newTitle: string): void {
+    const trimmed = newTitle.trim();
+    if (!trimmed) {
+      return;
+    }
+    this.sessionState.title = trimmed;
     this.onDidChangeStateEmitter.fire();
   }
 

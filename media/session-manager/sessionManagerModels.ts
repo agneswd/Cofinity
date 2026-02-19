@@ -39,6 +39,7 @@ export type SessionSnapshot = {
   settings: {
     notificationSoundEnabled: boolean;
     autoQueuePrompts: boolean;
+    enterSends: boolean;
   };
   autopilotMode: 'off' | 'drainQueue';
   autopilotTurnsUsed: number;
@@ -69,4 +70,5 @@ export type SessionSnapshotPayload = {
 export type ExtensionMessage =
   | { type: 'sessionsSnapshot'; payload: SessionsSnapshotPayload }
   | { type: 'sessionSnapshot'; payload: SessionSnapshotPayload }
-  | { type: 'error'; payload: { message: string } };
+  | { type: 'error'; payload: { message: string } }
+  | { type: 'openSettings'; payload: Record<string, never> };

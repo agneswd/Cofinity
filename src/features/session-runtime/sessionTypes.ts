@@ -35,6 +35,7 @@ export interface SessionChatMessage {
 export interface SessionSettings {
   notificationSoundEnabled: boolean;
   autoQueuePrompts: boolean;
+  enterSends: boolean;
 }
 
 export interface AutopilotState {
