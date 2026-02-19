@@ -3,7 +3,7 @@ import type {
   SessionListItem,
   SessionSnapshot
 } from './sessionManagerModels';
-import { playRequestSound } from './sessionManagerSound';
+import { playRequestSound, primeRequestSound } from './sessionManagerSound';
 import { renderSessionDetail, renderSessionsList } from './sessionManagerTemplate';
 
 declare function acquireVsCodeApi(): {
@@ -30,6 +30,13 @@ export class SessionManagerApp {
   }
 
   public start(): void {
+    const unlockAudio = () => {
+      primeRequestSound();
+    };
+
+    window.addEventListener('pointerdown', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
+
     window.addEventListener('message', (event: MessageEvent<ExtensionMessage>) => {
       this.handleMessage(event.data);
     });
@@ -60,9 +67,8 @@ export class SessionManagerApp {
 
   private handleSessionsSnapshot(selectedSessionId: string | null, sessions: SessionListItem[]): void {
     sessions.forEach((session) => {
-      const previousToolCalls = this.toolCallsBySession.get(session.sessionId);
+      const previousToolCalls = this.toolCallsBySession.get(session.sessionId) ?? 0;
       if (
-        previousToolCalls !== undefined &&
         session.toolCalls > previousToolCalls &&
         session.hasPendingRequest &&
         session.notificationSoundEnabled

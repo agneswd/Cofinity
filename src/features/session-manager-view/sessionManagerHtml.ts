@@ -34,16 +34,15 @@ export function buildSessionManagerHtml(
 </head>
 <body>
   <div class="app-shell">
+    <main class="session-detail-panel">
+      <div id="session-detail" class="session-detail empty-state">
+        Select a session to open its chat view.
+      </div>
+    </main>
     <aside class="session-list-panel">
       <div class="panel-heading">Sessions</div>
       <div id="sessions-list" class="session-list empty-state">No active sessions yet.</div>
     </aside>
-    <main class="session-detail-panel">
-      <div class="panel-heading">Selected Session</div>
-      <div id="session-detail" class="session-detail empty-state">
-        Select a session once the runtime starts emitting snapshots.
-      </div>
-    </main>
   </div>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>

@@ -1,6 +1,14 @@
 import { escapeHtml, formatTime, messageStateLabel } from './sessionManagerFormat';
 import type { SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
+function settingsIcon(): string {
+  return `
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M10.3 2.76a1 1 0 0 1 1.4 0l.98.99a7.9 7.9 0 0 1 1.89.79l1.36-.3a1 1 0 0 1 1.16.67l.56 1.67a7.6 7.6 0 0 1 1.45 1.44l1.67.56a1 1 0 0 1 .67 1.17l-.3 1.35c.33.6.6 1.23.79 1.89l.99.98a1 1 0 0 1 0 1.41l-.99.98a7.9 7.9 0 0 1-.79 1.89l.3 1.36a1 1 0 0 1-.67 1.16l-1.67.56a7.6 7.6 0 0 1-1.44 1.45l-.56 1.67a1 1 0 0 1-1.17.67l-1.35-.3a7.9 7.9 0 0 1-1.89.79l-.98.99a1 1 0 0 1-1.41 0l-.98-.99a7.9 7.9 0 0 1-1.89-.79l-1.36.3a1 1 0 0 1-1.16-.67l-.56-1.67A7.6 7.6 0 0 1 4.4 18.6l-1.67-.56a1 1 0 0 1-.67-1.17l.3-1.35a7.9 7.9 0 0 1-.79-1.89l-.99-.98a1 1 0 0 1 0-1.41l.99-.98c.18-.66.45-1.29.79-1.89l-.3-1.36a1 1 0 0 1 .67-1.16l1.67-.56A7.6 7.6 0 0 1 5.84 5.3l.56-1.67a1 1 0 0 1 1.17-.67l1.35.3c.6-.33 1.23-.6 1.89-.79l.98-.99ZM12 8.75A3.25 3.25 0 1 0 12 15.25A3.25 3.25 0 1 0 12 8.75Z" fill="currentColor"/>
+    </svg>
+  `;
+}
+
 function renderChatMessages(messages: SessionChatMessage[]): string {
   if (messages.length === 0) {
     return '<div class="empty-state">No messages in this session yet.</div>';
@@ -22,6 +30,29 @@ function renderChatMessages(messages: SessionChatMessage[]): string {
       `;
     })
     .join('');
+}
+
+function renderQueuedPrompts(session: SessionSnapshot): string {
+  if (session.queuedPrompts.length === 0) {
+    return '';
+  }
+
+  return `
+    <section class="queue-stack">
+      <div class="queue-stack-label">Queued prompts</div>
+      <div class="queue-stack-list">
+        ${session.queuedPrompts
+          .map((item) => {
+            return `
+              <div class="queue-stack-item">
+                <div class="queue-stack-item-text">${escapeHtml(item.content)}</div>
+              </div>
+            `;
+          })
+          .join('')}
+      </div>
+    </section>
+  `;
 }
 
 export function renderSessionsList(sessions: SessionListItem[], selectedSessionId: string | null): string {
@@ -64,7 +95,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             <span>queued ${session.queuedCount}</span>
           </div>
         </div>
-        <button id="settings-toggle" class="icon-button" aria-label="Open session settings">⚙</button>
+        <button id="settings-toggle" class="icon-button" aria-label="Open session settings">${settingsIcon()}</button>
       </header>
       <section class="settings-panel ${settingsOpen ? '' : 'is-hidden'}">
         <div class="settings-grid">
@@ -93,6 +124,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
       <section class="chat-transcript">
         ${renderChatMessages(session.chatMessages)}
       </section>
+      ${renderQueuedPrompts(session)}
       <footer class="composer-shell">
         <div class="composer-hint">${escapeHtml(composerHint)}</div>
         <div class="composer-row">

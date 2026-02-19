@@ -7,25 +7,36 @@ body {
   font-family: var(--vscode-font-family);
   color: var(--vscode-foreground);
   background: var(--vscode-editor-background);
+  height: 100vh;
 }
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) 1fr;
-  min-height: 100vh;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  height: 100vh;
 }
 
 .session-list-panel,
 .session-detail-panel {
-  padding: 12px;
   box-sizing: border-box;
+  min-height: 0;
 }
 
 .session-list-panel {
-  border-right: 1px solid var(--vscode-panel-border);
+  order: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  border-left: 1px solid var(--vscode-panel-border);
   background:
     radial-gradient(circle at top, color-mix(in srgb, var(--vscode-focusBorder) 28%, transparent), transparent 42%),
     color-mix(in srgb, var(--vscode-sideBar-background) 90%, transparent);
+}
+
+.session-detail-panel {
+  order: 1;
+  min-width: 0;
 }
 
 .panel-heading {
@@ -46,6 +57,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
 }
 
 .session-card {
@@ -83,16 +95,17 @@ body {
 
 .session-detail {
   padding: 0;
+  height: 100%;
 }
 
 .chat-detail {
-  min-height: 100vh;
+  height: 100%;
 }
 
 .chat-shell {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  min-height: 100vh;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  height: 100%;
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--vscode-focusBorder) 24%, transparent), transparent 34%),
     linear-gradient(180deg, color-mix(in srgb, var(--vscode-editor-background) 92%, transparent), var(--vscode-editor-background));
@@ -133,11 +146,19 @@ body {
 .icon-button {
   width: 34px;
   height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--vscode-panel-border);
   border-radius: 999px;
   background: var(--vscode-editorWidget-background);
   color: var(--vscode-foreground);
   cursor: pointer;
+}
+
+.icon-button svg {
+  width: 18px;
+  height: 18px;
 }
 
 .settings-panel {
@@ -188,6 +209,7 @@ body {
   flex-direction: column;
   gap: 12px;
   padding: 18px 20px;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -230,6 +252,38 @@ body {
   flex-wrap: wrap;
   font-size: 11px;
   color: var(--vscode-descriptionForeground);
+}
+
+.queue-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px 12px;
+}
+
+.queue-stack-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
+}
+
+.queue-stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.queue-stack-item {
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--vscode-editorWidget-background) 88%, transparent);
+}
+
+.queue-stack-item-text {
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .composer-shell {
@@ -296,15 +350,21 @@ body {
 @media (max-width: 860px) {
   .app-shell {
     grid-template-columns: 1fr;
+    height: auto;
   }
 
   .session-list-panel {
-    border-right: 0;
+    order: 1;
+    border-left: 0;
     border-bottom: 1px solid var(--vscode-panel-border);
   }
 
+  .session-detail-panel {
+    order: 2;
+  }
+
   .chat-shell {
-    min-height: auto;
+    height: auto;
   }
 
   .composer-row {
