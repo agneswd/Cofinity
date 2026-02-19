@@ -121,16 +121,50 @@ export class SessionController implements vscode.Disposable {
     };
 
     this.sessionState.promptQueue.push(item);
-    this.appendChatMessage({
-      messageId: chatMessageId,
-      role: 'user',
-      content: trimmed,
-      state: 'queued',
-      createdAtMs: item.enqueuedAtMs
-    });
     this.touch('active');
     this.pushHistory('queueItemAdded', 'Queued a prompt for the next tool call.');
     this.onDidChangeStateEmitter.fire();
+  }
+
+  public updateQueuedPrompt(itemId: string, content: string): boolean {
+    const trimmed = content.trim();
+    if (!trimmed) {
+      return false;
+    }
+
+    const queueItem = this.sessionState.promptQueue.find((item) => item.itemId === itemId);
+    if (!queueItem) {
+      return false;
+    }
+
+    queueItem.content = trimmed;
+    this.updateChatMessageContent(queueItem.chatMessageId, trimmed);
+    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.pushHistory('queueItemAdded', 'Edited a queued prompt.');
+    this.onDidChangeStateEmitter.fire();
+    return true;
+  }
+
+  public reorderQueuedPrompt(itemId: string, targetItemId: string): boolean {
+    if (itemId === targetItemId) {
+      return false;
+    }
+
+    const sourceIndex = this.sessionState.promptQueue.findIndex((item) => item.itemId === itemId);
+    const targetIndex = this.sessionState.promptQueue.findIndex((item) => item.itemId === targetItemId);
+    if (sourceIndex === -1 || targetIndex === -1) {
+      return false;
+    }
+
+    const nextQueue = [...this.sessionState.promptQueue];
+    const [item] = nextQueue.splice(sourceIndex, 1);
+    const normalizedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+    nextQueue.splice(normalizedTargetIndex, 0, item);
+    this.sessionState.promptQueue = nextQueue;
+    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.pushHistory('queueItemAdded', 'Reordered queued prompts.');
+    this.onDidChangeStateEmitter.fire();
+    return true;
   }
 
   public clearQueue(): void {
@@ -138,9 +172,6 @@ export class SessionController implements vscode.Disposable {
       return;
     }
 
-    this.sessionState.promptQueue.forEach((item) => {
-      this.updateChatMessageState(item.chatMessageId, 'skipped');
-    });
     this.sessionState.promptQueue = [];
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
     this.pushHistory('queueItemReleased', 'Cleared all queued prompts.');
@@ -217,6 +248,16 @@ export class SessionController implements vscode.Disposable {
       if (this.autopilotLimitReached()) {
         this.pushHistory('autopilotUsed', 'Autopilot paused because the turn limit was reached.');
       } else {
+        if (this.sessionState.promptQueue.length > 0) {
+          this.appendChatMessage({
+            messageId: createMessageId(),
+            role: 'assistant',
+            content: options.question.trim(),
+            state: 'delivered',
+            createdAtMs: Date.now()
+          });
+        }
+
         const queuedPrompt = this.takeQueuedPrompt();
         if (queuedPrompt) {
           const source = this.sessionState.autopilot.mode === 'drainQueue' ? 'autopilot' : 'queue';
@@ -321,7 +362,13 @@ export class SessionController implements vscode.Disposable {
     }
 
     next.status = 'sentToModel';
-    this.updateChatMessageState(next.chatMessageId, 'delivered');
+    this.appendChatMessage({
+      messageId: createMessageId(),
+      role: 'user',
+      content: next.content,
+      state: 'delivered',
+      createdAtMs: Date.now()
+    });
     this.pushHistory('queueItemReleased', 'Released a queued prompt to the tool caller.');
     this.touch('active');
     return next;
@@ -377,6 +424,19 @@ export class SessionController implements vscode.Disposable {
       return {
         ...message,
         state
+      };
+    });
+  }
+
+  private updateChatMessageContent(messageId: string, content: string): void {
+    this.sessionState.chatMessages = this.sessionState.chatMessages.map((message) => {
+      if (message.messageId !== messageId) {
+        return message;
+      }
+
+      return {
+        ...message,
+        content
       };
     });
   }
