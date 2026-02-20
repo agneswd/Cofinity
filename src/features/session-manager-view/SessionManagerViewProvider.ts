@@ -29,7 +29,11 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
   }
 
   reveal(): void {
-    this.view?.show?.(true);
+    if (this.view) {
+      this.view.show?.(true);
+    } else {
+      void vscode.commands.executeCommand(`${SessionManagerViewProvider.viewType}.focus`);
+    }
   }
 
   resolveWebviewView(
@@ -101,6 +105,24 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
         }
         return;
       }
+      case 'updateQueuedPrompt':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for updateQueuedPrompt.');
+          return;
+        }
+        if (!this.sessionRegistry.updateQueuedPrompt(message.sessionId, message.payload.itemId, message.payload.content)) {
+          this.postError('Failed to update the queued prompt.');
+        }
+        return;
+      case 'reorderQueuedPrompt':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for reorderQueuedPrompt.');
+          return;
+        }
+        if (!this.sessionRegistry.reorderQueuedPrompt(message.sessionId, message.payload.itemId, message.payload.targetItemId)) {
+          this.postError('Failed to reorder the queued prompt.');
+        }
+        return;
       case 'toggleAutopilot':
         if (!message.sessionId) {
           this.postError('Missing sessionId for toggleAutopilot.');
