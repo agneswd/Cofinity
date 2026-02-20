@@ -1,5 +1,13 @@
 import type { SessionChatMessage } from './sessionManagerModels';
 
+export function formatStatusLabel(status: string): string {
+  return status
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')

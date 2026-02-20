@@ -1,4 +1,4 @@
-import { escapeHtml, formatTime, messageStateLabel } from './sessionManagerFormat';
+import { escapeHtml, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
 import type { SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
 function settingsIcon(): string {
@@ -42,8 +42,17 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
         ${session.queuedPrompts
           .map((item) => {
             return `
-              <div class="queue-stack-item">
-                <div class="queue-stack-item-text">${escapeHtml(item.content)}</div>
+              <div class="queue-stack-item" data-item-id="${item.itemId}">
+                <button class="queue-drag-handle" data-item-id="${item.itemId}" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</button>
+                <div class="queue-stack-item-body">
+                  <div class="queue-stack-item-text">${escapeHtml(item.content)}</div>
+                  <textarea class="queue-inline-editor is-hidden" data-item-id="${item.itemId}" rows="2">${escapeHtml(item.content)}</textarea>
+                </div>
+                <div class="queue-stack-item-actions">
+                  <button class="queue-edit-button" data-item-id="${item.itemId}" title="Edit queued prompt">Edit</button>
+                  <button class="queue-save-button is-hidden" data-item-id="${item.itemId}" title="Save queued prompt">Save</button>
+                  <button class="queue-cancel-button is-hidden" data-item-id="${item.itemId}" title="Cancel editing queued prompt">Cancel</button>
+                </div>
               </div>
             `;
           })
@@ -62,6 +71,7 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
     .map((session) => {
       const dotClass = session.hasPendingRequest ? 'is-pending' : session.status === 'active' ? 'is-active' : '';
       const initials = escapeHtml(session.title.slice(0, 3));
+      const statusLabel = formatStatusLabel(session.status);
       return `
         <div class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''}" data-session-id="${session.sessionId}">
           <!-- mini view (shown when sidebar is collapsed) -->
@@ -75,7 +85,7 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
               <div class="status-dot ${dotClass}"></div>
               <div class="session-card-title">${escapeHtml(session.title)}</div>
             </div>
-            <div class="session-card-meta">${escapeHtml(session.status)}${session.queuedCount > 0 ? ` · ${session.queuedCount} queued` : ''}</div>
+            <div class="session-card-meta">${escapeHtml(statusLabel)}${session.queuedCount > 0 ? ` · ${session.queuedCount} queued` : ''}</div>
           </button>
           <div class="session-card-actions">
             <button class="session-action-btn" data-action="rename" data-session-id="${session.sessionId}" title="Rename session">
@@ -92,6 +102,7 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
 }
 
 export function renderSessionDetail(session: SessionSnapshot, settingsOpen: boolean): string {
+  const statusLabel = formatStatusLabel(session.status);
   const hint = session.pendingRequest
     ? 'Agent is waiting for your reply'
     : session.queuedPrompts.length > 0
@@ -109,7 +120,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
       <header class="chat-header">
         <div class="chat-header-left">
           <span class="chat-title">${escapeHtml(session.title)}</span>
-          <span class="status-chip">${escapeHtml(session.status)}</span>
+          <span class="status-chip">${escapeHtml(statusLabel)}</span>
           <span class="chat-header-stats">${session.stats.toolCalls} calls${session.queuedCount > 0 ? ` · ${session.queuedCount} queued` : ''}</span>
         </div>
       </header>
@@ -133,6 +144,10 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             <label class="setting-row">
               <span>Sound</span>
               <input id="sound-checkbox" type="checkbox" ${session.settings.notificationSoundEnabled ? 'checked' : ''} />
+            </label>
+            <label class="setting-row">
+              <span>Auto-reveal panel</span>
+              <input id="auto-reveal-checkbox" type="checkbox" ${session.settings.autoRevealEnabled ? 'checked' : ''} />
             </label>
             <label class="setting-row">
               <span>Auto-queue prompts</span>

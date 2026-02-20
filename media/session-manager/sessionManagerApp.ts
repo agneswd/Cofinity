@@ -26,6 +26,7 @@ export class SessionManagerApp {
   private session: SessionSnapshot | null = null;
   private settingsOpen = false;
   private sidebarCollapsed = false;
+  private draggedQueuedPromptId: string | null = null;
   private readonly toolCallsBySession = new Map<string, number>();
 
   constructor() {
@@ -212,10 +213,16 @@ export class SessionManagerApp {
     const autopilotBarCheckbox = document.getElementById('autopilot-bar-checkbox') as HTMLInputElement | null;
     const autopilotMaxTurns = document.getElementById('autopilot-max-turns') as HTMLInputElement | null;
     const soundCheckbox = document.getElementById('sound-checkbox') as HTMLInputElement | null;
+    const autoRevealCheckbox = document.getElementById('auto-reveal-checkbox') as HTMLInputElement | null;
     const autoQueueCheckbox = document.getElementById('auto-queue-checkbox') as HTMLInputElement | null;
     const enterSendsCheckbox = document.getElementById('enter-sends-checkbox') as HTMLInputElement | null;
     const clearQueueButton = document.getElementById('clear-queue-button') as HTMLButtonElement | null;
     const disposeSessionButton = document.getElementById('dispose-session-button') as HTMLButtonElement | null;
+    const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
+    const queueDragHandles = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-drag-handle'));
+    const queueEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-edit-button'));
+    const queueSaveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-save-button'));
+    const queueCancelButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-cancel-button'));
 
     // Modal: close button
     modalClose?.addEventListener('click', () => {
@@ -308,6 +315,7 @@ export class SessionManagerApp {
         sessionId: this.session?.sessionId,
         payload: {
           notificationSoundEnabled: !!soundCheckbox?.checked,
+          autoRevealEnabled: !!autoRevealCheckbox?.checked,
           autoQueuePrompts: !!autoQueueCheckbox?.checked,
           enterSends: !!enterSendsCheckbox?.checked
         }
@@ -315,6 +323,7 @@ export class SessionManagerApp {
     };
 
     soundCheckbox?.addEventListener('change', postSettingsUpdate);
+    autoRevealCheckbox?.addEventListener('change', postSettingsUpdate);
     autoQueueCheckbox?.addEventListener('change', postSettingsUpdate);
     enterSendsCheckbox?.addEventListener('change', postSettingsUpdate);
 
@@ -333,6 +342,139 @@ export class SessionManagerApp {
         type: 'disposeSession',
         sessionId: this.session?.sessionId,
         payload: {}
+      });
+    });
+
+    queueDragHandles.forEach((handle) => {
+      handle.addEventListener('dragstart', () => {
+        this.draggedQueuedPromptId = handle.dataset.itemId ?? null;
+      });
+
+      handle.addEventListener('dragend', () => {
+        this.draggedQueuedPromptId = null;
+        queueItems.forEach((item) => item.classList.remove('is-drag-target'));
+      });
+    });
+
+    queueItems.forEach((item) => {
+      item.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        item.classList.add('is-drag-target');
+      });
+
+      item.addEventListener('dragleave', () => {
+        item.classList.remove('is-drag-target');
+      });
+
+      item.addEventListener('drop', (event) => {
+        event.preventDefault();
+        item.classList.remove('is-drag-target');
+
+        const targetItemId = item.dataset.itemId;
+        if (!this.draggedQueuedPromptId || !targetItemId || this.draggedQueuedPromptId === targetItemId) {
+          return;
+        }
+
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'reorderQueuedPrompt',
+          sessionId: this.session?.sessionId,
+          payload: {
+            itemId: this.draggedQueuedPromptId,
+            targetItemId
+          }
+        });
+      });
+    });
+
+    queueEditButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.itemId;
+        if (!itemId) {
+          return;
+        }
+
+        const queueItem = document.querySelector<HTMLElement>(`.queue-stack-item[data-item-id="${itemId}"]`);
+        const textElement = queueItem?.querySelector<HTMLElement>('.queue-stack-item-text');
+        const editor = queueItem?.querySelector<HTMLTextAreaElement>('.queue-inline-editor');
+        const saveButton = queueItem?.querySelector<HTMLButtonElement>('.queue-save-button');
+        const cancelButton = queueItem?.querySelector<HTMLButtonElement>('.queue-cancel-button');
+        if (!queueItem || !textElement || !editor || !saveButton || !cancelButton) {
+          return;
+        }
+
+        textElement.classList.add('is-hidden');
+        editor.classList.remove('is-hidden');
+        button.classList.add('is-hidden');
+        saveButton.classList.remove('is-hidden');
+        cancelButton.classList.remove('is-hidden');
+        editor.focus();
+        editor.setSelectionRange(editor.value.length, editor.value.length);
+      });
+    });
+
+    queueSaveButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.itemId;
+        if (!itemId) {
+          return;
+        }
+
+        const queueItem = document.querySelector<HTMLElement>(`.queue-stack-item[data-item-id="${itemId}"]`);
+        const textElement = queueItem?.querySelector<HTMLElement>('.queue-stack-item-text');
+        const editor = queueItem?.querySelector<HTMLTextAreaElement>('.queue-inline-editor');
+        const editButton = queueItem?.querySelector<HTMLButtonElement>('.queue-edit-button');
+        const cancelButton = queueItem?.querySelector<HTMLButtonElement>('.queue-cancel-button');
+        if (!queueItem || !textElement || !editor || !editButton || !cancelButton) {
+          return;
+        }
+
+        const content = editor.value.trim();
+        if (!content) {
+          return;
+        }
+
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'updateQueuedPrompt',
+          sessionId: this.session?.sessionId,
+          payload: {
+            itemId,
+            content
+          }
+        });
+
+        textElement.classList.remove('is-hidden');
+        editor.classList.add('is-hidden');
+        editButton.classList.remove('is-hidden');
+        button.classList.add('is-hidden');
+        cancelButton.classList.add('is-hidden');
+      });
+    });
+
+    queueCancelButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.itemId;
+        if (!itemId) {
+          return;
+        }
+
+        const item = this.session?.queuedPrompts.find((queuedPrompt) => queuedPrompt.itemId === itemId);
+        const queueItem = document.querySelector<HTMLElement>(`.queue-stack-item[data-item-id="${itemId}"]`);
+        const textElement = queueItem?.querySelector<HTMLElement>('.queue-stack-item-text');
+        const editor = queueItem?.querySelector<HTMLTextAreaElement>('.queue-inline-editor');
+        const editButton = queueItem?.querySelector<HTMLButtonElement>('.queue-edit-button');
+        const saveButton = queueItem?.querySelector<HTMLButtonElement>('.queue-save-button');
+        if (!queueItem || !textElement || !editor || !editButton || !saveButton || !item) {
+          return;
+        }
+
+        editor.value = item.content;
+        textElement.classList.remove('is-hidden');
+        editor.classList.add('is-hidden');
+        editButton.classList.remove('is-hidden');
+        saveButton.classList.add('is-hidden');
+        button.classList.add('is-hidden');
       });
     });
   }

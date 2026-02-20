@@ -59,6 +59,7 @@ export class SessionController implements vscode.Disposable {
       chatMessages: [],
       settings: {
         notificationSoundEnabled: true,
+        autoRevealEnabled: true,
         autoQueuePrompts: true,
         enterSends: false
       },

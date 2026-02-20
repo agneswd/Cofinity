@@ -22,6 +22,7 @@ export interface SessionListItemSnapshot {
   hasPendingRequest: boolean;
   toolCalls: number;
   notificationSoundEnabled: boolean;
+  autoRevealEnabled: boolean;
   lastActiveAtMs: number;
 }
 
@@ -56,6 +57,7 @@ export function toSessionListItemSnapshot(state: SessionState): SessionListItemS
     hasPendingRequest: state.pendingRequest !== null,
     toolCalls: state.stats.toolCalls,
     notificationSoundEnabled: state.settings.notificationSoundEnabled,
+    autoRevealEnabled: state.settings.autoRevealEnabled,
     lastActiveAtMs: state.lastActiveAtMs
   };
 }

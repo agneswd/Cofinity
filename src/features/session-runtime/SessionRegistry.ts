@@ -118,6 +118,24 @@ export class SessionRegistry implements vscode.Disposable {
     return true;
   }
 
+  public updateQueuedPrompt(sessionId: SessionId, itemId: string, content: string): boolean {
+    const controller = this.controllers.get(sessionId);
+    if (!controller) {
+      return false;
+    }
+
+    return controller.updateQueuedPrompt(itemId, content);
+  }
+
+  public reorderQueuedPrompt(sessionId: SessionId, itemId: string, targetItemId: string): boolean {
+    const controller = this.controllers.get(sessionId);
+    if (!controller) {
+      return false;
+    }
+
+    return controller.reorderQueuedPrompt(itemId, targetItemId);
+  }
+
   public clearQueue(sessionId: SessionId): boolean {
     const controller = this.controllers.get(sessionId);
     if (!controller) {

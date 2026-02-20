@@ -450,14 +450,72 @@ body {
 }
 
 .queue-stack-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
   padding: 4px 10px;
   border-bottom: 1px solid var(--vscode-panel-border);
   font-size: 12px;
   line-height: 1.4;
   color: var(--vscode-descriptionForeground);
+}
+
+.queue-stack-item.is-drag-target {
+  background: var(--vscode-list-dropBackground, var(--vscode-list-hoverBackground));
+}
+
+.queue-drag-handle,
+.queue-edit-button,
+.queue-save-button,
+.queue-cancel-button {
+  border: 0;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.queue-drag-handle {
+  letter-spacing: -1px;
+}
+
+.queue-edit-button:hover,
+.queue-save-button:hover,
+.queue-cancel-button:hover,
+.queue-drag-handle:hover {
+  color: var(--vscode-foreground);
+}
+
+.queue-stack-item-body {
+  min-width: 0;
+}
+
+.queue-stack-item-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.queue-inline-editor {
+  width: 100%;
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  font: inherit;
+  padding: 4px 6px;
+  resize: vertical;
+}
+
+.queue-stack-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.is-hidden {
+  display: none;
 }
 
 /* ── Autopilot footer row ───────────────────────────────── */

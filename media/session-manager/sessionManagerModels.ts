@@ -38,6 +38,7 @@ export type SessionSnapshot = {
   };
   settings: {
     notificationSoundEnabled: boolean;
+    autoRevealEnabled: boolean;
     autoQueuePrompts: boolean;
     enterSends: boolean;
   };

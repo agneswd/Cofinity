@@ -104,6 +104,11 @@ suite('SessionRegistry', () => {
 
     registry.enqueuePrompt(sessionId, 'queued follow up');
 
+    registry.selectSession(sessionId);
+    const detailBeforeRelease = registry.getSelectedSessionSnapshot();
+    assert.equal(detailBeforeRelease?.chatMessages.some((message) => message.content === 'queued follow up'), false);
+    assert.equal(detailBeforeRelease?.queuedCount, 1);
+
     const passiveToken = new vscode.CancellationTokenSource();
 
     const queuedResult = await registry.handleToolInvocation({
@@ -121,6 +126,40 @@ suite('SessionRegistry', () => {
     const detailAfterRelease = registry.getSelectedSessionSnapshot();
     assert.equal(detailAfterRelease?.chatMessages.at(-1)?.content, 'queued follow up');
     assert.equal(detailAfterRelease?.chatMessages.at(-1)?.state, 'delivered');
+  });
+
+  test('supports editing and drag-style reordering for queued prompts', async () => {
+    const token = new vscode.CancellationTokenSource();
+
+    const initialRequest = registry.handleToolInvocation({
+      question: 'queue controls session',
+      requestKind: 'question',
+      token: token.token
+    });
+
+    await waitFor(() => registry.buildManagerSnapshot().sessions.length === 1);
+    const sessionId = registry.buildManagerSnapshot().sessions[0].sessionId;
+
+    registry.selectSession(sessionId);
+    const detail = registry.getSelectedSessionSnapshot();
+    assert.ok(detail?.pendingRequest);
+    registry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'initial response');
+    await initialRequest;
+
+    registry.enqueuePrompt(sessionId, 'first prompt');
+    registry.enqueuePrompt(sessionId, 'second prompt');
+
+    const firstSnapshot = registry.getSessionSnapshot(sessionId);
+    assert.ok(firstSnapshot);
+    const firstItemId = firstSnapshot.queuedPrompts[0].itemId;
+    const secondItemId = firstSnapshot.queuedPrompts[1].itemId;
+
+    assert.equal(registry.updateQueuedPrompt(sessionId, firstItemId, 'first prompt edited'), true);
+    assert.equal(registry.reorderQueuedPrompt(sessionId, secondItemId, firstItemId), true);
+
+    const reorderedSnapshot = registry.getSessionSnapshot(sessionId);
+    assert.equal(reorderedSnapshot?.queuedPrompts[0].content, 'second prompt');
+    assert.equal(reorderedSnapshot?.queuedPrompts[1].content, 'first prompt edited');
   });
 
   test('persists settings and marks cleared queued messages as skipped', async () => {
@@ -152,7 +191,8 @@ suite('SessionRegistry', () => {
     const updatedDetail = registry.getSelectedSessionSnapshot();
     assert.equal(updatedDetail?.settings.notificationSoundEnabled, false);
     assert.equal(updatedDetail?.settings.autoQueuePrompts, false);
-    assert.equal(updatedDetail?.chatMessages.at(-1)?.state, 'skipped');
+    assert.equal(updatedDetail?.queuedCount, 0);
+    assert.equal(updatedDetail?.chatMessages.some((message) => message.content === 'queued then cleared'), false);
 
     const restoredRegistry = new SessionRegistry();
 
@@ -164,7 +204,7 @@ suite('SessionRegistry', () => {
 
       assert.equal(restoredDetail?.settings.notificationSoundEnabled, false);
       assert.equal(restoredDetail?.settings.autoQueuePrompts, false);
-      assert.equal(restoredDetail?.chatMessages.at(-1)?.state, 'skipped');
+      assert.equal(restoredDetail?.queuedCount, 0);
     } finally {
       restoredRegistry.dispose();
     }

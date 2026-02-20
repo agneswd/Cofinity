@@ -20,9 +20,11 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
   | ProtocolEnvelope<'submitComposerInput', { content: string }>
+  | ProtocolEnvelope<'updateQueuedPrompt', { itemId: string; content: string }>
+  | ProtocolEnvelope<'reorderQueuedPrompt', { itemId: string; targetItemId: string }>
   | ProtocolEnvelope<'toggleAutopilot', { enabled: boolean }>
   | ProtocolEnvelope<'setAutopilotMaxTurns', { maxTurns: number }>
-  | ProtocolEnvelope<'updateSessionSettings', { notificationSoundEnabled: boolean; autoQueuePrompts: boolean; enterSends: boolean }>
+  | ProtocolEnvelope<'updateSessionSettings', { notificationSoundEnabled: boolean; autoRevealEnabled: boolean; autoQueuePrompts: boolean; enterSends: boolean }>
   | ProtocolEnvelope<'renameSession', { newTitle: string }>
   | ProtocolEnvelope<'disposeSession', Record<string, never>>
   | ProtocolEnvelope<'clearQueue', Record<string, never>>;
