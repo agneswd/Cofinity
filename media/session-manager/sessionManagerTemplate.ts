@@ -1,4 +1,4 @@
-import { escapeHtml, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
+import { escapeHtml, formatDuration, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
 import type { GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
 function settingsIcon(): string {
@@ -15,13 +15,30 @@ function renderChatMessages(messages: SessionChatMessage[]): string {
   }
 
   return messages
-    .map((message) => {
+    .map((message, index) => {
       const stateLabel = messageStateLabel(message);
+
+      // For assistant messages, compute how long the agent took since the last user/system message
+      let durationLabel = '';
+      if (message.role === 'assistant') {
+        for (let i = index - 1; i >= 0; i--) {
+          const prev = messages[i];
+          if (prev.role === 'user' || prev.role === 'system') {
+            const elapsed = message.createdAtMs - prev.createdAtMs;
+            if (elapsed > 500) {
+              durationLabel = formatDuration(elapsed);
+            }
+            break;
+          }
+        }
+      }
+
       return `
         <article class="chat-message role-${message.role}">
           <div class="chat-message-body">${escapeHtml(message.content)}</div>
           <div class="chat-message-meta">
             <span>${escapeHtml(stateLabel)}</span>
+            ${durationLabel ? `<span class="chat-message-duration" title="Agent response time">${escapeHtml(durationLabel)}</span>` : ''}
             <span>${formatTime(message.createdAtMs)}</span>
           </div>
         </article>

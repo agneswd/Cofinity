@@ -427,6 +427,11 @@ body {
   gap: 6px;
 }
 
+.chat-message-duration {
+  color: var(--vscode-descriptionForeground);
+  opacity: 0.75;
+}
+
 /* ── Queue stack above composer ─────────────────────────── */
 
 .queue-stack {
