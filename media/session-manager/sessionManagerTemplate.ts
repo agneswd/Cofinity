@@ -206,7 +206,9 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
         ${hint ? `<div class="composer-hint">${escapeHtml(hint)}</div>` : ''}
         <div class="composer-row">
           <textarea id="composer-textarea" class="composer-textarea" placeholder="${escapeHtml(composerPlaceholder)}"></textarea>
-          <button id="send-button" class="composer-button">Send</button>
+          <button id="send-button" class="composer-button" title="Send (Ctrl+Enter)" aria-label="Send">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M1.5 1l13 7-13 7V9.5l9-1.5-9-1.5V1z"/></svg>
+          </button>
         </div>
       </footer>
       <div class="autopilot-bar">

@@ -266,7 +266,17 @@ export class SessionManagerApp {
         payload: { content }
       });
       composerTextarea.value = '';
+      // Collapse back to min-height after send
+      composerTextarea.style.height = 'auto';
     });
+
+    // Auto-expand textarea as text grows
+    if (composerTextarea) {
+      composerTextarea.addEventListener('input', () => {
+        composerTextarea.style.height = 'auto';
+        composerTextarea.style.height = `${composerTextarea.scrollHeight}px`;
+      });
+    }
 
     composerTextarea?.addEventListener('keydown', (event) => {
       const enterSends = this.globalSettings.enterSends;

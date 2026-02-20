@@ -600,24 +600,30 @@ body {
 
 .composer-row {
   display: flex;
-  gap: 0;
+  position: relative;
 }
 
 .composer-textarea {
   flex: 1;
-  min-height: 60px;
-  max-height: 180px;
-  padding: 7px 9px;
+  min-height: 36px;
+  max-height: 160px;
+  padding: 7px 40px 7px 9px;
   border: 0;
   border-top: 1px solid var(--vscode-panel-border);
-  border-right: 1px solid var(--vscode-panel-border);
   resize: none;
+  overflow-y: auto;
   background: var(--vscode-input-background);
   color: var(--vscode-input-foreground);
   font-family: var(--vscode-font-family);
   font-size: 12px;
   line-height: 1.5;
   outline: none;
+  /* Hide scrollbar (Webkit) */
+  scrollbar-width: none;
+}
+
+.composer-textarea::-webkit-scrollbar {
+  display: none;
 }
 
 .composer-textarea:focus {
@@ -625,19 +631,28 @@ body {
 }
 
 .composer-button {
-  flex-shrink: 0;
-  width: 52px;
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 26px;
+  height: 26px;
   border: 0;
-  border-top: 1px solid var(--vscode-panel-border);
+  border-radius: 4px;
   background: var(--vscode-button-background);
   color: var(--vscode-button-foreground);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
-  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: opacity 0.1s;
 }
 
 .composer-button:hover {
+  opacity: 1;
   background: var(--vscode-button-hoverBackground);
 }
 
