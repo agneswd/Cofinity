@@ -397,7 +397,7 @@ body {
 .chat-message.role-assistant .chat-message-body,
 .chat-message.role-system .chat-message-body {
   padding: 3px 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
@@ -410,7 +410,7 @@ body {
 .chat-message.role-user .chat-message-body {
   max-width: 72%;
   padding: 5px 9px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
