@@ -143,19 +143,35 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             </label>
             <label class="setting-row">
               <span>Sound</span>
-              <input id="sound-checkbox" type="checkbox" ${globalSettings.notificationSoundEnabled ? 'checked' : ''} />
+              <label class="setting-toggle">
+                <input id="sound-checkbox" type="checkbox" ${globalSettings.notificationSoundEnabled ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
             </label>
             <label class="setting-row">
               <span>Auto-reveal panel</span>
-              <input id="auto-reveal-checkbox" type="checkbox" ${globalSettings.autoRevealEnabled ? 'checked' : ''} />
+              <label class="setting-toggle">
+                <input id="auto-reveal-checkbox" type="checkbox" ${globalSettings.autoRevealEnabled ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
             </label>
             <label class="setting-row">
               <span>Auto-queue prompts</span>
-              <input id="auto-queue-checkbox" type="checkbox" ${globalSettings.autoQueuePrompts ? 'checked' : ''} />
+              <label class="setting-toggle">
+                <input id="auto-queue-checkbox" type="checkbox" ${globalSettings.autoQueuePrompts ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
             </label>
             <label class="setting-row">
               <span>Enter sends</span>
-              <input id="enter-sends-checkbox" type="checkbox" ${globalSettings.enterSends ? 'checked' : ''} />
+              <label class="setting-toggle">
+                <input id="enter-sends-checkbox" type="checkbox" ${globalSettings.enterSends ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
             </label>
           </div>
           <div class="settings-modal-actions">
