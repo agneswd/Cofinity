@@ -3,7 +3,6 @@ import type {
   SessionChatMessage,
   SessionId,
   SessionEvent,
-  SessionSettings,
   SessionState,
   SessionStatus
 } from './sessionTypes';
@@ -21,8 +20,6 @@ export interface SessionListItemSnapshot {
   queuedCount: number;
   hasPendingRequest: boolean;
   toolCalls: number;
-  notificationSoundEnabled: boolean;
-  autoRevealEnabled: boolean;
   lastActiveAtMs: number;
 }
 
@@ -34,7 +31,6 @@ export interface SessionSnapshot {
   queuedPrompts: QueuedPromptSnapshot[];
   chatMessages: SessionChatMessage[];
   pendingRequest: PendingUserRequest | null;
-  settings: SessionSettings;
   autopilotMode: SessionState['autopilot']['mode'];
   autopilotTurnsUsed: number;
   autopilotMaxTurns?: number;
@@ -56,8 +52,6 @@ export function toSessionListItemSnapshot(state: SessionState): SessionListItemS
     queuedCount: state.promptQueue.length,
     hasPendingRequest: state.pendingRequest !== null,
     toolCalls: state.stats.toolCalls,
-    notificationSoundEnabled: state.settings.notificationSoundEnabled,
-    autoRevealEnabled: state.settings.autoRevealEnabled,
     lastActiveAtMs: state.lastActiveAtMs
   };
 }
@@ -75,7 +69,6 @@ export function toSessionSnapshot(state: SessionState): SessionSnapshot {
     })),
     chatMessages: state.chatMessages,
     pendingRequest: state.pendingRequest,
-    settings: state.settings,
     autopilotMode: state.autopilot.mode,
     autopilotTurnsUsed: state.autopilot.turnsUsed,
     autopilotMaxTurns: state.autopilot.maxTurns,

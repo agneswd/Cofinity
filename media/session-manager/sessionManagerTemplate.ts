@@ -1,5 +1,5 @@
 import { escapeHtml, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
-import type { SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
+import type { GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
 function settingsIcon(): string {
   return `
@@ -101,7 +101,7 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
     .join('');
 }
 
-export function renderSessionDetail(session: SessionSnapshot, settingsOpen: boolean): string {
+export function renderSessionDetail(session: SessionSnapshot, settingsOpen: boolean, globalSettings: GlobalSettings): string {
   const statusLabel = formatStatusLabel(session.status);
   const hint = session.pendingRequest
     ? 'Agent is waiting for your reply'
@@ -111,7 +111,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
 
   const composerPlaceholder = session.pendingRequest
     ? 'Reply to agent'
-    : session.settings.autoQueuePrompts
+    : globalSettings.autoQueuePrompts
       ? 'Will queue until agent asks for input'
       : 'Send a prompt';
 
@@ -129,7 +129,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
       <div id="settings-modal-backdrop" class="settings-modal-backdrop ${settingsOpen ? '' : 'is-hidden'}">
         <div class="settings-modal" role="dialog" aria-label="Session settings">
           <div class="settings-modal-header">
-            <span>Session settings</span>
+            <span>Global settings</span>
             <button id="settings-modal-close" class="settings-modal-close" aria-label="Close">&times;</button>
           </div>
           <div class="settings-modal-body">
@@ -143,19 +143,19 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             </label>
             <label class="setting-row">
               <span>Sound</span>
-              <input id="sound-checkbox" type="checkbox" ${session.settings.notificationSoundEnabled ? 'checked' : ''} />
+              <input id="sound-checkbox" type="checkbox" ${globalSettings.notificationSoundEnabled ? 'checked' : ''} />
             </label>
             <label class="setting-row">
               <span>Auto-reveal panel</span>
-              <input id="auto-reveal-checkbox" type="checkbox" ${session.settings.autoRevealEnabled ? 'checked' : ''} />
+              <input id="auto-reveal-checkbox" type="checkbox" ${globalSettings.autoRevealEnabled ? 'checked' : ''} />
             </label>
             <label class="setting-row">
               <span>Auto-queue prompts</span>
-              <input id="auto-queue-checkbox" type="checkbox" ${session.settings.autoQueuePrompts ? 'checked' : ''} />
+              <input id="auto-queue-checkbox" type="checkbox" ${globalSettings.autoQueuePrompts ? 'checked' : ''} />
             </label>
             <label class="setting-row">
               <span>Enter sends</span>
-              <input id="enter-sends-checkbox" type="checkbox" ${session.settings.enterSends ? 'checked' : ''} />
+              <input id="enter-sends-checkbox" type="checkbox" ${globalSettings.enterSends ? 'checked' : ''} />
             </label>
           </div>
           <div class="settings-modal-actions">

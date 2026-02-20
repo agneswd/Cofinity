@@ -11,7 +11,6 @@ import type {
   SessionEvent,
   SessionId,
   SessionRequestKind,
-  SessionSettings,
   SessionState
 } from './sessionTypes';
 
@@ -29,7 +28,6 @@ export interface SessionRestoreState {
   status: SessionState['status'];
   promptQueue: PromptQueueItem[];
   chatMessages: SessionChatMessage[];
-  settings: SessionSettings;
   autopilot: AutopilotState;
   history: SessionEvent[];
   stats: SessionState['stats'];
@@ -57,12 +55,6 @@ export class SessionController implements vscode.Disposable {
       pendingRequest: null,
       promptQueue: [],
       chatMessages: [],
-      settings: {
-        notificationSoundEnabled: true,
-        autoRevealEnabled: true,
-        autoQueuePrompts: true,
-        enterSends: false
-      },
       autopilot: {
         mode: 'off',
         maxTurns: 20,
@@ -92,7 +84,6 @@ export class SessionController implements vscode.Disposable {
     this.sessionState.status = summary.status;
     this.sessionState.promptQueue = summary.promptQueue;
     this.sessionState.chatMessages = summary.chatMessages;
-    this.sessionState.settings = summary.settings;
     this.sessionState.autopilot = summary.autopilot;
     this.sessionState.history = summary.history;
     this.sessionState.stats = summary.stats;
@@ -182,15 +173,6 @@ export class SessionController implements vscode.Disposable {
   public setAutopilotEnabled(enabled: boolean): void {
     this.sessionState.autopilot.mode = enabled ? 'drainQueue' : 'off';
     this.sessionState.autopilot.maxTurns ??= 20;
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
-    this.onDidChangeStateEmitter.fire();
-  }
-
-  public updateSettings(settings: Partial<SessionSettings>): void {
-    this.sessionState.settings = {
-      ...this.sessionState.settings,
-      ...settings
-    };
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
     this.onDidChangeStateEmitter.fire();
   }

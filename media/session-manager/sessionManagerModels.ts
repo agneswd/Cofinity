@@ -1,3 +1,10 @@
+export type GlobalSettings = {
+  notificationSoundEnabled: boolean;
+  autoRevealEnabled: boolean;
+  autoQueuePrompts: boolean;
+  enterSends: boolean;
+};
+
 export type SessionListItem = {
   sessionId: string;
   title: string;
@@ -5,7 +12,6 @@ export type SessionListItem = {
   queuedCount: number;
   hasPendingRequest: boolean;
   toolCalls: number;
-  notificationSoundEnabled: boolean;
   lastActiveAtMs: number;
 };
 
@@ -36,12 +42,6 @@ export type SessionSnapshot = {
     options?: string[];
     createdAtMs: number;
   };
-  settings: {
-    notificationSoundEnabled: boolean;
-    autoRevealEnabled: boolean;
-    autoQueuePrompts: boolean;
-    enterSends: boolean;
-  };
   autopilotMode: 'off' | 'drainQueue';
   autopilotTurnsUsed: number;
   autopilotMaxTurns?: number;
@@ -71,5 +71,6 @@ export type SessionSnapshotPayload = {
 export type ExtensionMessage =
   | { type: 'sessionsSnapshot'; payload: SessionsSnapshotPayload }
   | { type: 'sessionSnapshot'; payload: SessionSnapshotPayload }
+  | { type: 'globalSettings'; payload: GlobalSettings }
   | { type: 'error'; payload: { message: string } }
   | { type: 'openSettings'; payload: Record<string, never> };

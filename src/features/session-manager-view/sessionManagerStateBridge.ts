@@ -1,5 +1,6 @@
 import { exec } from 'child_process';
 import * as vscode from 'vscode';
+import { GlobalSettingsManager } from '../global-settings/globalSettings';
 import type { SessionListItemSnapshot } from '../session-runtime/sessionSnapshot';
 import { SessionRegistry } from '../session-runtime/SessionRegistry';
 import { SessionManagerViewProvider } from './SessionManagerViewProvider';
@@ -10,7 +11,8 @@ export class SessionManagerStateBridge implements vscode.Disposable {
 
   constructor(
     private readonly registry: SessionRegistry,
-    private readonly provider: SessionManagerViewProvider
+    private readonly provider: SessionManagerViewProvider,
+    private readonly settingsManager: GlobalSettingsManager
   ) {
     this.stateSubscription = this.registry.onDidChangeState(() => {
       this.sync();
@@ -25,15 +27,16 @@ export class SessionManagerStateBridge implements vscode.Disposable {
   }
 
   private checkForNewPendingRequests(sessions: SessionListItemSnapshot[]): void {
+    const globalSettings = this.settingsManager.get();
     for (const session of sessions) {
       const wasAlreadyPending = this.pendingSessionIds.has(session.sessionId);
 
       if (session.hasPendingRequest && !wasAlreadyPending) {
         this.pendingSessionIds.add(session.sessionId);
-        if (session.autoRevealEnabled) {
+        if (globalSettings.autoRevealEnabled) {
           this.provider.reveal();
         }
-        if (session.notificationSoundEnabled) {
+        if (globalSettings.notificationSoundEnabled) {
           this.playSystemSound();
         }
       } else if (!session.hasPendingRequest) {

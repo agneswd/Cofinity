@@ -10,7 +10,7 @@ import {
 } from './sessionSnapshot';
 import { SessionController, type SessionRestoreState } from './SessionController';
 import { SessionTokenRouter } from './SessionTokenRouter';
-import type { SessionId, SessionRequestKind, SessionSettings } from './sessionTypes';
+import type { SessionId, SessionRequestKind } from './sessionTypes';
 
 export interface HandleToolInvocationOptions {
   sessionId?: string;
@@ -166,19 +166,6 @@ export class SessionRegistry implements vscode.Disposable {
     return true;
   }
 
-  public updateSettings(
-    sessionId: SessionId,
-    settings: Partial<SessionSettings>
-  ): boolean {
-    const controller = this.controllers.get(sessionId);
-    if (!controller) {
-      return false;
-    }
-
-    controller.updateSettings(settings);
-    return true;
-  }
-
   public renameSession(sessionId: SessionId, newTitle: string): boolean {
     const controller = this.controllers.get(sessionId);
     if (!controller) {
@@ -246,7 +233,6 @@ export class SessionRegistry implements vscode.Disposable {
         status: state.status,
         promptQueue: state.promptQueue,
         chatMessages: state.chatMessages,
-        settings: state.settings,
         autopilot: state.autopilot,
         history: state.history,
         stats: state.stats
@@ -344,7 +330,6 @@ export class SessionRegistry implements vscode.Disposable {
       status: record.status,
       promptQueue: record.promptQueue,
       chatMessages: record.chatMessages,
-      settings: record.settings,
       autopilot: record.autopilot,
       history: record.history,
       stats: record.stats

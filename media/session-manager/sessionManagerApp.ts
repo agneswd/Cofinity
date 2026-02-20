@@ -1,5 +1,6 @@
 import type {
   ExtensionMessage,
+  GlobalSettings,
   SessionListItem,
   SessionSnapshot
 } from './sessionManagerModels';
@@ -24,6 +25,12 @@ export class SessionManagerApp {
   private selectedSessionId: string | null = null;
   private sessions: SessionListItem[] = [];
   private session: SessionSnapshot | null = null;
+  private globalSettings: GlobalSettings = {
+    notificationSoundEnabled: true,
+    autoRevealEnabled: true,
+    autoQueuePrompts: true,
+    enterSends: false
+  };
   private settingsOpen = false;
   private sidebarCollapsed = false;
   private draggedQueuedPromptId: string | null = null;
@@ -67,6 +74,10 @@ export class SessionManagerApp {
         this.renderSession();
         this.scrollTranscriptToBottom();
         return;
+      case 'globalSettings':
+        this.globalSettings = message.payload;
+        this.renderSession();
+        return;
       case 'error':
         this.renderInlineError(message.payload.message);
         return;
@@ -89,7 +100,7 @@ export class SessionManagerApp {
         isKnown &&
         session.toolCalls > previousToolCalls &&
         session.hasPendingRequest &&
-        session.notificationSoundEnabled
+        this.globalSettings.notificationSoundEnabled
       ) {
         playRequestSound();
       }
@@ -195,7 +206,7 @@ export class SessionManagerApp {
     }
 
     this.sessionDetailElement.className = 'session-detail chat-detail';
-    this.sessionDetailElement.innerHTML = renderSessionDetail(this.session, this.settingsOpen);
+    this.sessionDetailElement.innerHTML = renderSessionDetail(this.session, this.settingsOpen, this.globalSettings);
 
     this.bindSessionEvents();
   }
@@ -258,7 +269,7 @@ export class SessionManagerApp {
     });
 
     composerTextarea?.addEventListener('keydown', (event) => {
-      const enterSends = this.session?.settings?.enterSends ?? false;
+      const enterSends = this.globalSettings.enterSends;
       if (enterSends) {
         // Enter sends; Shift+Enter adds newline
         if (event.key === 'Enter' && !event.shiftKey) {
@@ -311,8 +322,7 @@ export class SessionManagerApp {
     const postSettingsUpdate = () => {
       this.vscode.postMessage({
         protocolVersion: 1,
-        type: 'updateSessionSettings',
-        sessionId: this.session?.sessionId,
+        type: 'updateGlobalSettings',
         payload: {
           notificationSoundEnabled: !!soundCheckbox?.checked,
           autoRevealEnabled: !!autoRevealCheckbox?.checked,

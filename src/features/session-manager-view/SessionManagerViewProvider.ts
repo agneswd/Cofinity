@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { type GlobalSettings, GlobalSettingsManager } from '../global-settings/globalSettings';
 import type {
   SessionManagerSnapshot,
   SessionSnapshot
@@ -21,7 +22,8 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
 
   constructor(
     private readonly extensionUri: vscode.Uri,
-    private readonly sessionRegistry: SessionRegistry
+    private readonly sessionRegistry: SessionRegistry,
+    private readonly settingsManager: GlobalSettingsManager
   ) {}
 
   dispose(): void {
@@ -64,6 +66,7 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
     if (isUiReadyMessage(message)) {
       this.postSessionsSnapshot(this.sessionRegistry.buildManagerSnapshot());
       this.postSessionSnapshot(this.sessionRegistry.getSelectedSessionSnapshot());
+      this.postGlobalSettings(this.settingsManager.get());
       return;
     }
 
@@ -95,8 +98,8 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
           return;
         }
 
-        if (!session.settings.autoQueuePrompts) {
-          this.postError('Auto queue is disabled for this session. Turn it back on from the settings menu to queue prompts while the agent is not waiting.');
+        if (!this.settingsManager.get().autoQueuePrompts) {
+          this.postError('Auto queue is disabled. Turn it back on from the global settings to queue prompts while the agent is not waiting.');
           return;
         }
 
@@ -141,14 +144,10 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
           this.postError('Failed to update autopilot turn limits for the selected session.');
         }
         return;
-      case 'updateSessionSettings':
-        if (!message.sessionId) {
-          this.postError('Missing sessionId for updateSessionSettings.');
-          return;
-        }
-        if (!this.sessionRegistry.updateSettings(message.sessionId, message.payload)) {
-          this.postError('Failed to update settings for the selected session.');
-        }
+      case 'updateGlobalSettings':
+        void this.settingsManager.update(message.payload).then(() => {
+          this.postGlobalSettings(this.settingsManager.get());
+        });
         return;
       case 'renameSession':
         if (!message.sessionId) {
@@ -184,6 +183,14 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
 
   private postMessage(message: ExtensionToWebviewMessage): void {
     void this.view?.webview.postMessage(message);
+  }
+
+  public postGlobalSettings(settings: GlobalSettings): void {
+    this.postMessage({
+      protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
+      type: 'globalSettings',
+      payload: settings
+    });
   }
 
   public postSessionsSnapshot(snapshot: SessionManagerSnapshot): void {

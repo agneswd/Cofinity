@@ -32,18 +32,30 @@ export interface SessionChatMessage {
   relatedRequestId?: string;
 }
 
-export interface SessionSettings {
-  notificationSoundEnabled: boolean;
-  autoRevealEnabled: boolean;
-  autoQueuePrompts: boolean;
-  enterSends: boolean;
-}
-
 export interface AutopilotState {
   mode: 'off' | 'drainQueue';
   maxTurns?: number;
   turnsUsed: number;
   cooldownUntilMs?: number;
+}
+
+export interface SessionState {
+  sessionId: SessionId;
+  createdAtMs: number;
+  lastActiveAtMs: number;
+  status: SessionStatus;
+  title: string;
+  inflight: InflightInvocation | null;
+  pendingRequest: PendingUserRequest | null;
+  promptQueue: PromptQueueItem[];
+  chatMessages: SessionChatMessage[];
+  autopilot: AutopilotState;
+  history: SessionEvent[];
+  stats: {
+    toolCalls: number;
+    userResponses: number;
+    cancellations: number;
+  };
 }
 
 export interface SessionEvent {
@@ -73,24 +85,4 @@ export interface InflightInvocation {
   invocationId: string;
   startedAtMs: number;
   cancelled: boolean;
-}
-
-export interface SessionState {
-  sessionId: SessionId;
-  createdAtMs: number;
-  lastActiveAtMs: number;
-  status: SessionStatus;
-  title: string;
-  inflight: InflightInvocation | null;
-  pendingRequest: PendingUserRequest | null;
-  promptQueue: PromptQueueItem[];
-  chatMessages: SessionChatMessage[];
-  settings: SessionSettings;
-  autopilot: AutopilotState;
-  history: SessionEvent[];
-  stats: {
-    toolCalls: number;
-    userResponses: number;
-    cancellations: number;
-  };
 }

@@ -1,3 +1,4 @@
+import type { GlobalSettings } from '../global-settings/globalSettings';
 import type { SessionSnapshot, SessionManagerSnapshot } from '../session-runtime/sessionSnapshot';
 
 export const SESSION_MANAGER_PROTOCOL_VERSION = 1 as const;
@@ -13,6 +14,7 @@ export interface ProtocolEnvelope<TType extends string, TPayload> {
 export type ExtensionToWebviewMessage =
   | ProtocolEnvelope<'sessionsSnapshot', SessionManagerSnapshot>
   | ProtocolEnvelope<'sessionSnapshot', { session: SessionSnapshot | null }>
+  | ProtocolEnvelope<'globalSettings', GlobalSettings>
   | ProtocolEnvelope<'error', { message: string }>
   | ProtocolEnvelope<'openSettings', Record<string, never>>;
 
@@ -24,7 +26,7 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'reorderQueuedPrompt', { itemId: string; targetItemId: string }>
   | ProtocolEnvelope<'toggleAutopilot', { enabled: boolean }>
   | ProtocolEnvelope<'setAutopilotMaxTurns', { maxTurns: number }>
-  | ProtocolEnvelope<'updateSessionSettings', { notificationSoundEnabled: boolean; autoRevealEnabled: boolean; autoQueuePrompts: boolean; enterSends: boolean }>
+  | ProtocolEnvelope<'updateGlobalSettings', GlobalSettings>
   | ProtocolEnvelope<'renameSession', { newTitle: string }>
   | ProtocolEnvelope<'disposeSession', Record<string, never>>
   | ProtocolEnvelope<'clearQueue', Record<string, never>>;

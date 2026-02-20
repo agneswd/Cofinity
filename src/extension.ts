@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { registerCofinityTool } from './features/cofinity-tool/registerCofinityTool';
+import { GlobalSettingsManager } from './features/global-settings/globalSettings';
 import { SessionCleanup } from './features/session-runtime/lifecycle/SessionCleanup';
 import { SessionRegistry } from './features/session-runtime/SessionRegistry';
 import { SessionPersistence } from './features/session-runtime/storage/SessionPersistence';
@@ -11,8 +12,9 @@ let sessionRegistry: SessionRegistry | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
   const registry = new SessionRegistry();
-  const provider = new SessionManagerViewProvider(context.extensionUri, registry);
-  const bridge = new SessionManagerStateBridge(registry, provider);
+  const settingsManager = new GlobalSettingsManager(context.globalState);
+  const provider = new SessionManagerViewProvider(context.extensionUri, registry, settingsManager);
+  const bridge = new SessionManagerStateBridge(registry, provider, settingsManager);
   const persistence = new SessionPersistence(context, registry);
   const cleanup = new SessionCleanup(registry);
 

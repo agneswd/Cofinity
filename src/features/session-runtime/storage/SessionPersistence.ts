@@ -6,7 +6,6 @@ import type {
   SessionChatMessage,
   SessionEvent,
   SessionId,
-  SessionSettings,
   SessionState
 } from '../sessionTypes';
 
@@ -21,7 +20,6 @@ export interface PersistedSessionRecord {
   status: SessionState['status'];
   promptQueue: PromptQueueItem[];
   chatMessages: SessionChatMessage[];
-  settings: SessionSettings;
   autopilot: AutopilotState;
   history: SessionEvent[];
   stats: SessionState['stats'];
@@ -42,8 +40,6 @@ function isPersistedSessionRecord(value: unknown): value is PersistedSessionReco
     typeof candidate.status === 'string' &&
     Array.isArray(candidate.promptQueue) &&
     Array.isArray(candidate.chatMessages) &&
-    !!candidate.settings &&
-    typeof candidate.settings === 'object' &&
     !!candidate.autopilot &&
     typeof candidate.autopilot === 'object' &&
     Array.isArray(candidate.history) &&
