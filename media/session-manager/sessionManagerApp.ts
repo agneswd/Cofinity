@@ -29,7 +29,14 @@ export class SessionManagerApp {
     notificationSoundEnabled: true,
     autoRevealEnabled: true,
     autoQueuePrompts: true,
-    enterSends: false
+    enterSends: false,
+    autopilotPrompts: [
+      'Continue with your best judgment. You are in autopilot mode.',
+      'Proceed as you see fit. Make any decisions you need to.',
+      'You have my approval. Continue with the task.'
+    ],
+    autopilotDelayMinMs: 2000,
+    autopilotDelayMaxMs: 5000
   };
   private settingsOpen = false;
   private sidebarCollapsed = false;
@@ -330,6 +337,8 @@ export class SessionManagerApp {
     });
 
     const postSettingsUpdate = () => {
+      const autopilotDelayMin = document.getElementById('autopilot-delay-min') as HTMLInputElement | null;
+      const autopilotDelayMax = document.getElementById('autopilot-delay-max') as HTMLInputElement | null;
       this.vscode.postMessage({
         protocolVersion: 1,
         type: 'updateGlobalSettings',
@@ -337,7 +346,10 @@ export class SessionManagerApp {
           notificationSoundEnabled: !!soundCheckbox?.checked,
           autoRevealEnabled: !!autoRevealCheckbox?.checked,
           autoQueuePrompts: !!autoQueueCheckbox?.checked,
-          enterSends: !!enterSendsCheckbox?.checked
+          enterSends: !!enterSendsCheckbox?.checked,
+          autopilotPrompts: this.globalSettings.autopilotPrompts,
+          autopilotDelayMinMs: Number(autopilotDelayMin?.value ?? this.globalSettings.autopilotDelayMinMs),
+          autopilotDelayMaxMs: Number(autopilotDelayMax?.value ?? this.globalSettings.autopilotDelayMaxMs)
         }
       });
     };
@@ -346,6 +358,44 @@ export class SessionManagerApp {
     autoRevealCheckbox?.addEventListener('change', postSettingsUpdate);
     autoQueueCheckbox?.addEventListener('change', postSettingsUpdate);
     enterSendsCheckbox?.addEventListener('change', postSettingsUpdate);
+
+    const autopilotDelayMinEl = document.getElementById('autopilot-delay-min') as HTMLInputElement | null;
+    const autopilotDelayMaxEl = document.getElementById('autopilot-delay-max') as HTMLInputElement | null;
+    autopilotDelayMinEl?.addEventListener('change', postSettingsUpdate);
+    autopilotDelayMaxEl?.addEventListener('change', postSettingsUpdate);
+
+    // Autopilot prompt delete
+    document.querySelectorAll<HTMLButtonElement>('.autopilot-prompt-delete').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.dataset.promptIndex);
+        const newPrompts = [...this.globalSettings.autopilotPrompts];
+        newPrompts.splice(idx, 1);
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'updateGlobalSettings',
+          payload: { ...this.globalSettings, autopilotPrompts: newPrompts }
+        });
+      });
+    });
+
+    // Autopilot prompt add
+    const newPromptTextarea = document.getElementById('autopilot-prompt-new') as HTMLTextAreaElement | null;
+    const addPromptButton = document.getElementById('autopilot-prompt-add') as HTMLButtonElement | null;
+    addPromptButton?.addEventListener('click', () => {
+      const text = newPromptTextarea?.value.trim();
+      if (!text) {
+        return;
+      }
+      const newPrompts = [...this.globalSettings.autopilotPrompts, text];
+      this.vscode.postMessage({
+        protocolVersion: 1,
+        type: 'updateGlobalSettings',
+        payload: { ...this.globalSettings, autopilotPrompts: newPrompts }
+      });
+      if (newPromptTextarea) {
+        newPromptTextarea.value = '';
+      }
+    });
 
     clearQueueButton?.addEventListener('click', () => {
       this.vscode.postMessage({

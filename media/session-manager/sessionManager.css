@@ -801,6 +801,95 @@ body {
   border-top: 1px solid var(--vscode-panel-border);
 }
 
+/* ── Autopilot prompts editor ───────────────────────────── */
+
+.settings-section-divider {
+  height: 1px;
+  background: var(--vscode-panel-border);
+  margin: 8px 0 6px;
+}
+
+.settings-section-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
+  padding: 2px 0 5px;
+}
+
+.autopilot-prompts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.autopilot-prompt-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--vscode-panel-border) 50%, transparent);
+}
+
+.autopilot-prompt-item:last-child {
+  border-bottom: none;
+}
+
+.autopilot-prompt-number {
+  flex-shrink: 0;
+  width: 16px;
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+  padding-top: 2px;
+  text-align: center;
+}
+
+.autopilot-prompt-text {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--vscode-foreground);
+  word-break: break-word;
+}
+
+.autopilot-prompt-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--vscode-descriptionForeground);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  opacity: 0.6;
+}
+
+.autopilot-prompt-delete:hover {
+  opacity: 1;
+  color: var(--vscode-inputValidation-errorBorder, #f48771);
+}
+
+.autopilot-prompt-add-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  margin-bottom: 4px;
+}
+
+.autopilot-prompt-textarea {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: 11px;
+  line-height: 1.4;
+  resize: none;
+  outline: none;
+}
+
 /* ── Misc ────────────────────────────────────────────────── */
 
 .secondary-button {

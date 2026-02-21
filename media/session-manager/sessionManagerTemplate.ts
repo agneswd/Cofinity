@@ -190,6 +190,30 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
+            <div class="settings-section-divider"></div>
+            <div class="settings-section-label">Autopilot prompts</div>
+            <div id="autopilot-prompts-list" class="autopilot-prompts-list">
+              ${globalSettings.autopilotPrompts.map((prompt, idx) => `
+                <div class="autopilot-prompt-item" data-prompt-index="${idx}">
+                  <div class="autopilot-prompt-number">${idx + 1}</div>
+                  <div class="autopilot-prompt-text">${escapeHtml(prompt)}</div>
+                  <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt">&times;</button>
+                </div>
+              `).join('')}
+            </div>
+            <div class="autopilot-prompt-add-row">
+              <textarea id="autopilot-prompt-new" class="autopilot-prompt-textarea" rows="2" placeholder="New autopilot prompt…"></textarea>
+              <button id="autopilot-prompt-add" class="secondary-button">Add</button>
+            </div>
+            <div class="settings-section-label" style="margin-top:8px">Response delay</div>
+            <div class="setting-row">
+              <span>Min (ms)</span>
+              <input id="autopilot-delay-min" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMinMs}" />
+            </div>
+            <div class="setting-row">
+              <span>Max (ms)</span>
+              <input id="autopilot-delay-max" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMaxMs}" />
+            </div>
           </div>
           <div class="settings-modal-actions">
             <button id="clear-queue-button" class="secondary-button">Clear queue</button>

@@ -3,6 +3,9 @@ export type GlobalSettings = {
   autoRevealEnabled: boolean;
   autoQueuePrompts: boolean;
   enterSends: boolean;
+  autopilotPrompts: string[];
+  autopilotDelayMinMs: number;
+  autopilotDelayMaxMs: number;
 };
 
 export type SessionListItem = {
