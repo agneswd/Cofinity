@@ -152,7 +152,11 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
           <div class="settings-modal-body">
             <label class="setting-row">
               <span>Autopilot</span>
-              <input id="autopilot-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
+              <label class="setting-toggle">
+                <input id="autopilot-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
             </label>
             <label class="setting-row">
               <span>Turn limit</span>
@@ -236,12 +240,12 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
         </div>
       </footer>
       <div class="autopilot-bar">
-        <span class="autopilot-bar-label">Autopilot</span>
         <label class="autopilot-toggle">
           <input id="autopilot-bar-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
           <span class="autopilot-toggle-track"></span>
           <span class="autopilot-toggle-thumb"></span>
         </label>
+        <span class="autopilot-bar-label">Autopilot</span>
       </div>
     </div>
   `;
