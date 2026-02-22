@@ -42,6 +42,7 @@ export class SessionManagerStateBridge implements vscode.Disposable {
       if (session.hasPendingRequest && !wasAlreadyPending) {
         this.pendingSessionIds.add(session.sessionId);
         if (globalSettings.autoRevealEnabled) {
+          this.registry.selectSession(session.sessionId);
           this.provider.reveal();
         }
         if (globalSettings.notificationSoundEnabled) {
