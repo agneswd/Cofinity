@@ -439,12 +439,58 @@ body {
   border-top: 1px solid var(--vscode-panel-border);
 }
 
+.queue-stack-header {
+  padding: 0;
+}
+
+.queue-collapse-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 10px 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.queue-collapse-toggle:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
 .queue-stack-label {
-  padding: 4px 10px 2px;
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--vscode-descriptionForeground);
+}
+
+.queue-count-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--vscode-descriptionForeground);
+  background: color-mix(in srgb, var(--vscode-button-background) 20%, transparent);
+  border: 1px solid var(--vscode-panel-border);
+  padding: 0 5px;
+  line-height: 15px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.queue-collapse-chevron {
+  margin-left: auto;
+  font-size: 8px;
+  color: var(--vscode-descriptionForeground);
+  transition: transform 0.15s;
+}
+
+.queue-stack.is-collapsed .queue-collapse-chevron {
+  transform: rotate(180deg);
+}
+
+.queue-stack.is-collapsed .queue-stack-list {
+  display: none;
 }
 
 .queue-stack-list {

@@ -236,6 +236,7 @@ export class SessionManagerApp {
     const enterSendsCheckbox = document.getElementById('enter-sends-checkbox') as HTMLInputElement | null;
     const clearQueueButton = document.getElementById('clear-queue-button') as HTMLButtonElement | null;
     const disposeSessionButton = document.getElementById('dispose-session-button') as HTMLButtonElement | null;
+    const queueCollapseToggle = document.getElementById('queue-collapse-toggle') as HTMLButtonElement | null;
     const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
     const queueDragHandles = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-drag-handle'));
     const queueEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-edit-button'));
@@ -246,6 +247,11 @@ export class SessionManagerApp {
     modalClose?.addEventListener('click', () => {
       this.settingsOpen = false;
       modalBackdrop?.classList.add('is-hidden');
+    });
+
+    // Queue collapse toggle
+    queueCollapseToggle?.addEventListener('click', () => {
+      queueCollapseToggle.closest('.queue-stack')?.classList.toggle('is-collapsed');
     });
 
     // Modal: close on backdrop click

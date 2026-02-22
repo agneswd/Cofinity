@@ -52,9 +52,16 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
     return '';
   }
 
+  const count = session.queuedPrompts.length;
   return `
     <section class="queue-stack">
-      <div class="queue-stack-label">Queued prompts</div>
+      <div class="queue-stack-header">
+        <button id="queue-collapse-toggle" class="queue-collapse-toggle" aria-label="Toggle queue" title="Collapse / expand">
+          <span class="queue-stack-label">Queued prompts</span>
+          <span class="queue-count-badge">${count}</span>
+          <span class="queue-collapse-chevron">&#9650;</span>
+        </button>
+      </div>
       <div class="queue-stack-list">
         ${session.queuedPrompts
           .map((item) => {
