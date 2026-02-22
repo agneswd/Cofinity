@@ -273,8 +273,9 @@ export class SessionManagerApp {
         payload: { content }
       });
       composerTextarea.value = '';
-      // Collapse back to min-height after send
+      // Collapse back to min-height after send and keep focus
       composerTextarea.style.height = 'auto';
+      composerTextarea.focus();
     });
 
     // Auto-expand textarea as text grows
