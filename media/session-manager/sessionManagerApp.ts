@@ -235,7 +235,6 @@ export class SessionManagerApp {
     const autoQueueCheckbox = document.getElementById('auto-queue-checkbox') as HTMLInputElement | null;
     const enterSendsCheckbox = document.getElementById('enter-sends-checkbox') as HTMLInputElement | null;
     const clearQueueButton = document.getElementById('clear-queue-button') as HTMLButtonElement | null;
-    const disposeSessionButton = document.getElementById('dispose-session-button') as HTMLButtonElement | null;
     const queueCollapseToggle = document.getElementById('queue-collapse-toggle') as HTMLButtonElement | null;
     const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
     const queueDragHandles = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-drag-handle'));
@@ -408,15 +407,6 @@ export class SessionManagerApp {
       this.vscode.postMessage({
         protocolVersion: 1,
         type: 'clearQueue',
-        sessionId: this.session?.sessionId,
-        payload: {}
-      });
-    });
-
-    disposeSessionButton?.addEventListener('click', () => {
-      this.vscode.postMessage({
-        protocolVersion: 1,
-        type: 'disposeSession',
         sessionId: this.session?.sessionId,
         payload: {}
       });

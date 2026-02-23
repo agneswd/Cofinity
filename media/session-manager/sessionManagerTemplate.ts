@@ -61,6 +61,7 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
           <span class="queue-count-badge">${count}</span>
           <span class="queue-collapse-chevron">&#9650;</span>
         </button>
+        <button id="clear-queue-button" class="queue-clear-button" title="Clear all queued prompts" aria-label="Clear queue">&times; Clear</button>
       </div>
       <div class="queue-stack-list">
         ${session.queuedPrompts
@@ -231,10 +232,6 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               <span>Max (ms)</span>
               <input id="autopilot-delay-max" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMaxMs}" />
             </div>
-          </div>
-          <div class="settings-modal-actions">
-            <button id="clear-queue-button" class="secondary-button">Clear queue</button>
-            <button id="dispose-session-button" class="secondary-button">Dispose</button>
           </div>
         </div>
       </div>
