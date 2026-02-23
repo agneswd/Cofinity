@@ -261,9 +261,10 @@ export class SessionController implements vscode.Disposable {
 
       return await this.awaitManualResponse(options);
     } finally {
+      const wasCancelled = this.sessionState.inflight?.cancelled ?? false;
       this.sessionState.inflight = null;
       if (!this.sessionState.pendingRequest && this.sessionState.status !== 'disposed') {
-        this.touch('active');
+        this.touch(wasCancelled ? 'interrupted' : 'active');
       }
       this.onDidChangeStateEmitter.fire();
     }

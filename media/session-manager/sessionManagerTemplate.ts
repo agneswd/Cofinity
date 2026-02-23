@@ -93,7 +93,13 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
 
   return sessions
     .map((session) => {
-      const dotClass = session.hasPendingRequest ? 'is-pending' : session.status === 'active' ? 'is-active' : '';
+      const dotClass = session.hasPendingRequest
+        ? 'is-pending'
+        : session.status === 'active'
+          ? 'is-active'
+          : session.status === 'interrupted'
+            ? 'is-interrupted'
+            : '';
       const initials = escapeHtml(session.title.slice(0, 3));
       const statusLabel = formatStatusLabel(session.status);
       return `

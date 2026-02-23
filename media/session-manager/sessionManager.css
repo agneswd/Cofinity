@@ -255,6 +255,10 @@ body {
   background: var(--vscode-testing-runAction, #23d18b);
 }
 
+.status-dot.is-interrupted {
+  background: var(--vscode-notificationsErrorIcon-foreground, #f14c4c);
+}
+
 .session-card-meta {
   margin-top: 2px;
   font-size: 11px;
