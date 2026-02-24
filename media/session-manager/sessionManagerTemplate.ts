@@ -74,6 +74,9 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
                 </div>
                 <div class="queue-stack-item-actions">
                   <button class="queue-edit-button" data-item-id="${item.itemId}" title="Edit queued prompt">Edit</button>
+                  <button class="queue-delete-button" data-item-id="${item.itemId}" title="Delete queued prompt" aria-label="Delete queued prompt">
+                    <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" aria-hidden="true"><path d="M7 3h2v1H7V3ZM3 5h10v1h-1v7H4V6H3V5Zm2 1v6h6V6H5Z"/></svg>
+                  </button>
                   <button class="queue-save-button is-hidden" data-item-id="${item.itemId}" title="Save queued prompt">Save</button>
                   <button class="queue-cancel-button is-hidden" data-item-id="${item.itemId}" title="Cancel editing queued prompt">Cancel</button>
                 </div>

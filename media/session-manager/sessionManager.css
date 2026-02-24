@@ -611,6 +611,7 @@ body {
 }
 
 .queue-edit-button,
+.queue-delete-button,
 .queue-save-button,
 .queue-cancel-button {
   border: 0;
@@ -622,6 +623,7 @@ body {
 }
 
 .queue-edit-button:hover,
+.queue-delete-button:hover,
 .queue-save-button:hover,
 .queue-cancel-button:hover {
   color: var(--vscode-foreground);

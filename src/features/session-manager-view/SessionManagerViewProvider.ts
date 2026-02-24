@@ -125,6 +125,15 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
           this.postError('Failed to update the queued prompt.');
         }
         return;
+      case 'removeQueuedPrompt':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for removeQueuedPrompt.');
+          return;
+        }
+        if (!this.sessionRegistry.removeQueuedPrompt(message.sessionId, message.payload.itemId)) {
+          this.postError('Failed to remove the queued prompt.');
+        }
+        return;
       case 'reorderQueuedPrompt':
         if (!message.sessionId) {
           this.postError('Missing sessionId for reorderQueuedPrompt.');

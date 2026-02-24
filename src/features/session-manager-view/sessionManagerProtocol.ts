@@ -24,6 +24,7 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
   | ProtocolEnvelope<'submitComposerInput', { content: string }>
   | ProtocolEnvelope<'updateQueuedPrompt', { itemId: string; content: string }>
+  | ProtocolEnvelope<'removeQueuedPrompt', { itemId: string }>
   | ProtocolEnvelope<'reorderQueuedPrompt', { itemId: string; targetItemId: string }>
   | ProtocolEnvelope<'toggleAutopilot', { enabled: boolean }>
   | ProtocolEnvelope<'setAutopilotMaxTurns', { maxTurns: number }>

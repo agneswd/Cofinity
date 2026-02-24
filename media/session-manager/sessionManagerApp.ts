@@ -255,6 +255,7 @@ export class SessionManagerApp {
     const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
     const autopilotPromptItems = Array.from(document.querySelectorAll<HTMLElement>('.autopilot-prompt-item'));
     const queueEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-edit-button'));
+    const queueDeleteButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-delete-button'));
     const queueSaveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-save-button'));
     const queueCancelButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-cancel-button'));
 
@@ -552,6 +553,24 @@ export class SessionManagerApp {
         cancelButton.classList.remove('is-hidden');
         editor.focus();
         editor.setSelectionRange(editor.value.length, editor.value.length);
+      });
+    });
+
+    queueDeleteButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const itemId = button.dataset.itemId;
+        if (!itemId) {
+          return;
+        }
+
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'removeQueuedPrompt',
+          sessionId: this.session?.sessionId,
+          payload: {
+            itemId
+          }
+        });
       });
     });
 

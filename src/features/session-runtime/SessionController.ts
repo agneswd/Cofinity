@@ -159,6 +159,19 @@ export class SessionController implements vscode.Disposable {
     return true;
   }
 
+  public removeQueuedPrompt(itemId: string): boolean {
+    const nextQueue = this.sessionState.promptQueue.filter((item) => item.itemId !== itemId);
+    if (nextQueue.length === this.sessionState.promptQueue.length) {
+      return false;
+    }
+
+    this.sessionState.promptQueue = nextQueue;
+    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.pushHistory('queueItemReleased', 'Removed a queued prompt.');
+    this.onDidChangeStateEmitter.fire();
+    return true;
+  }
+
   public clearQueue(): void {
     if (this.sessionState.promptQueue.length === 0) {
       return;
