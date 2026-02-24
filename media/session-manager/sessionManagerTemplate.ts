@@ -101,10 +101,11 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
           : session.status === 'interrupted'
             ? 'is-interrupted'
             : '';
+      const attentionClass = session.hasPendingRequest ? 'is-pending-attention' : '';
       const initials = escapeHtml(session.title.slice(0, 3));
       const statusLabel = formatStatusLabel(session.status);
       return `
-        <div class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''}" data-session-id="${session.sessionId}">
+        <div class="session-card ${session.sessionId === selectedSessionId ? 'is-selected' : ''} ${attentionClass}" data-session-id="${session.sessionId}">
           <!-- mini view (shown when sidebar is collapsed) -->
           <button class="session-card-mini session-card-select" data-session-id="${session.sessionId}" title="${escapeHtml(session.title)}">
             <div class="status-dot ${dotClass}"></div>

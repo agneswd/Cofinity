@@ -26,7 +26,7 @@ body {
 }
 
 .app-shell.sidebar-collapsed {
-  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-columns: minmax(0, 1fr) 42px;
 }
 
 .session-list-panel {
@@ -107,7 +107,7 @@ body {
   display: none;
   align-items: center;
   gap: 4px;
-  padding: 5px 6px;
+  padding: 5px 7px;
   width: 100%;
   justify-content: center;
   overflow: hidden;
@@ -118,7 +118,7 @@ body {
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
-  max-width: 22px;
+  max-width: 28px;
 }
 
 .sidebar-collapsed .session-card-mini {
@@ -171,9 +171,17 @@ body {
   background: var(--vscode-list-hoverBackground);
 }
 
+.session-card.is-pending-attention {
+  animation: pending-session-pulse 1.4s ease-in-out infinite;
+}
+
 .session-card.is-selected {
   background: var(--vscode-list-activeSelectionBackground);
   color: var(--vscode-list-activeSelectionForeground);
+}
+
+.session-card.is-selected.is-pending-attention {
+  animation: pending-session-pulse-selected 1.4s ease-in-out infinite;
 }
 
 .session-card-select {
@@ -249,6 +257,7 @@ body {
 
 .status-dot.is-pending {
   background: var(--vscode-notificationsWarningIcon-foreground, #cca700);
+  animation: pending-dot-pulse 1.1s ease-in-out infinite;
 }
 
 .status-dot.is-active {
@@ -266,6 +275,43 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@keyframes pending-session-pulse {
+  0%,
+  100% {
+    background: transparent;
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+
+  50% {
+    background: color-mix(in srgb, var(--vscode-notificationsWarningIcon-foreground, #cca700) 12%, transparent);
+    box-shadow: inset 2px 0 0 0 var(--vscode-notificationsWarningIcon-foreground, #cca700);
+  }
+}
+
+@keyframes pending-session-pulse-selected {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+
+  50% {
+    box-shadow: inset 2px 0 0 0 var(--vscode-notificationsWarningIcon-foreground, #cca700);
+  }
+}
+
+@keyframes pending-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(1.2);
+  }
 }
 
 .session-card.is-selected .session-card-meta {
