@@ -20,6 +20,7 @@ export type ExtensionToWebviewMessage =
 
 export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
+  | ProtocolEnvelope<'newCopilotSession', Record<string, never>>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
   | ProtocolEnvelope<'submitComposerInput', { content: string }>
   | ProtocolEnvelope<'updateQueuedPrompt', { itemId: string; content: string }>

@@ -71,6 +71,14 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
     }
 
     switch (message.type) {
+      case 'newCopilotSession':
+        void vscode.commands.executeCommand('vscode.editorChat.start').then(
+          undefined,
+          () => {
+            this.postError('Failed to start a new Copilot session.');
+          }
+        );
+        return;
       case 'selectSession':
         this.sessionRegistry.selectSession(message.payload.sessionId);
         return;

@@ -20,6 +20,7 @@ export class SessionManagerApp {
   private readonly sessionsListElement = document.getElementById('sessions-list');
   private readonly sessionDetailElement = document.getElementById('session-detail');
   private readonly sidebarToggleButton = document.getElementById('sidebar-toggle') as HTMLButtonElement | null;
+  private readonly newSessionButton = document.getElementById('new-session-button') as HTMLButtonElement | null;
   private readonly appShell = document.querySelector('.app-shell') as HTMLElement | null;
 
   private selectedSessionId: string | null = null;
@@ -63,6 +64,14 @@ export class SessionManagerApp {
     this.sidebarToggleButton?.addEventListener('click', () => {
       this.sidebarCollapsed = !this.sidebarCollapsed;
       this.appShell?.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+    });
+
+    this.newSessionButton?.addEventListener('click', () => {
+      this.vscode.postMessage({
+        protocolVersion: 1,
+        type: 'newCopilotSession',
+        payload: {}
+      });
     });
 
     this.vscode.postMessage({

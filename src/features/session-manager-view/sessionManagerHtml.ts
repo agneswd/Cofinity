@@ -43,7 +43,10 @@ export function buildSessionManagerHtml(
       <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
         <span class="sidebar-toggle-icon">&#x276F;</span>
       </button>
-      <div class="panel-heading">Sessions</div>
+      <div class="panel-heading">
+        <span>Sessions</span>
+        <button id="new-session-button" class="panel-heading-action" aria-label="Start a new Copilot session">New session</button>
+      </div>
       <div id="sessions-list" class="session-list empty-state">No active sessions yet.</div>
     </aside>
   </div>

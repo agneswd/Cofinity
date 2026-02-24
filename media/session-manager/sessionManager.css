@@ -47,7 +47,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 26px;
+  height: 33px;
   border: 0;
   border-bottom: 1px solid var(--vscode-panel-border);
   background: transparent;
@@ -136,12 +136,33 @@ body {
 
 .panel-heading {
   flex-shrink: 0;
-  padding: 8px 10px 6px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--vscode-descriptionForeground);
   border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.panel-heading-action {
+  border: 1px solid var(--vscode-panel-border);
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  padding: 2px 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.panel-heading-action:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+  color: var(--vscode-foreground);
 }
 
 .session-list {
