@@ -41,6 +41,7 @@ export class SessionManagerApp {
   private settingsOpen = false;
   private sidebarCollapsed = false;
   private draggedQueuedPromptId: string | null = null;
+  private draggedAutopilotPromptIndex: number | null = null;
   private readonly toolCallsBySession = new Map<string, number>();
 
   constructor() {
@@ -236,8 +237,14 @@ export class SessionManagerApp {
     const enterSendsCheckbox = document.getElementById('enter-sends-checkbox') as HTMLInputElement | null;
     const clearQueueButton = document.getElementById('clear-queue-button') as HTMLButtonElement | null;
     const queueCollapseToggle = document.getElementById('queue-collapse-toggle') as HTMLButtonElement | null;
+    const autopilotPromptModalBackdrop = document.getElementById('autopilot-prompt-modal-backdrop') as HTMLDivElement | null;
+    const autopilotPromptModalClose = document.getElementById('autopilot-prompt-modal-close') as HTMLButtonElement | null;
+    const autopilotPromptModalCancel = document.getElementById('autopilot-prompt-cancel') as HTMLButtonElement | null;
+    const autopilotPromptModalSave = document.getElementById('autopilot-prompt-save') as HTMLButtonElement | null;
+    const newPromptTextarea = document.getElementById('autopilot-prompt-new') as HTMLTextAreaElement | null;
+    const addPromptButton = document.getElementById('autopilot-prompt-add') as HTMLButtonElement | null;
     const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
-    const queueDragHandles = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-drag-handle'));
+    const autopilotPromptItems = Array.from(document.querySelectorAll<HTMLElement>('.autopilot-prompt-item'));
     const queueEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-edit-button'));
     const queueSaveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-save-button'));
     const queueCancelButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-cancel-button'));
@@ -258,6 +265,26 @@ export class SessionManagerApp {
       if (event.target === modalBackdrop) {
         this.settingsOpen = false;
         modalBackdrop.classList.add('is-hidden');
+      }
+    });
+
+    const closeAutopilotPromptModal = () => {
+      autopilotPromptModalBackdrop?.classList.add('is-hidden');
+      if (newPromptTextarea) {
+        newPromptTextarea.value = '';
+      }
+    };
+
+    addPromptButton?.addEventListener('click', () => {
+      autopilotPromptModalBackdrop?.classList.remove('is-hidden');
+      newPromptTextarea?.focus();
+    });
+
+    autopilotPromptModalClose?.addEventListener('click', closeAutopilotPromptModal);
+    autopilotPromptModalCancel?.addEventListener('click', closeAutopilotPromptModal);
+    autopilotPromptModalBackdrop?.addEventListener('click', (event) => {
+      if (event.target === autopilotPromptModalBackdrop) {
+        closeAutopilotPromptModal();
       }
     });
 
@@ -384,10 +411,7 @@ export class SessionManagerApp {
       });
     });
 
-    // Autopilot prompt add
-    const newPromptTextarea = document.getElementById('autopilot-prompt-new') as HTMLTextAreaElement | null;
-    const addPromptButton = document.getElementById('autopilot-prompt-add') as HTMLButtonElement | null;
-    addPromptButton?.addEventListener('click', () => {
+    autopilotPromptModalSave?.addEventListener('click', () => {
       const text = newPromptTextarea?.value.trim();
       if (!text) {
         return;
@@ -398,9 +422,7 @@ export class SessionManagerApp {
         type: 'updateGlobalSettings',
         payload: { ...this.globalSettings, autopilotPrompts: newPrompts }
       });
-      if (newPromptTextarea) {
-        newPromptTextarea.value = '';
-      }
+      closeAutopilotPromptModal();
     });
 
     clearQueueButton?.addEventListener('click', () => {
@@ -412,18 +434,16 @@ export class SessionManagerApp {
       });
     });
 
-    queueDragHandles.forEach((handle) => {
-      handle.addEventListener('dragstart', () => {
-        this.draggedQueuedPromptId = handle.dataset.itemId ?? null;
+    queueItems.forEach((item) => {
+      item.addEventListener('dragstart', () => {
+        this.draggedQueuedPromptId = item.dataset.itemId ?? null;
       });
 
-      handle.addEventListener('dragend', () => {
+      item.addEventListener('dragend', () => {
         this.draggedQueuedPromptId = null;
         queueItems.forEach((item) => item.classList.remove('is-drag-target'));
       });
-    });
 
-    queueItems.forEach((item) => {
       item.addEventListener('dragover', (event) => {
         event.preventDefault();
         item.classList.add('is-drag-target');
@@ -450,6 +470,52 @@ export class SessionManagerApp {
             itemId: this.draggedQueuedPromptId,
             targetItemId
           }
+        });
+      });
+    });
+
+    autopilotPromptItems.forEach((item) => {
+      item.addEventListener('dragstart', () => {
+        this.draggedAutopilotPromptIndex = Number(item.dataset.promptIndex);
+      });
+
+      item.addEventListener('dragend', () => {
+        this.draggedAutopilotPromptIndex = null;
+        autopilotPromptItems.forEach((promptItem) => promptItem.classList.remove('is-drag-target'));
+      });
+
+      item.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        item.classList.add('is-drag-target');
+      });
+
+      item.addEventListener('dragleave', () => {
+        item.classList.remove('is-drag-target');
+      });
+
+      item.addEventListener('drop', (event) => {
+        event.preventDefault();
+        item.classList.remove('is-drag-target');
+
+        const targetIndex = Number(item.dataset.promptIndex);
+        if (
+          this.draggedAutopilotPromptIndex === null ||
+          Number.isNaN(targetIndex) ||
+          this.draggedAutopilotPromptIndex === targetIndex
+        ) {
+          return;
+        }
+
+        const nextPrompts = [...this.globalSettings.autopilotPrompts];
+        const [movedPrompt] = nextPrompts.splice(this.draggedAutopilotPromptIndex, 1);
+        const normalizedTargetIndex =
+          this.draggedAutopilotPromptIndex < targetIndex ? targetIndex - 1 : targetIndex;
+        nextPrompts.splice(normalizedTargetIndex, 0, movedPrompt);
+
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'updateGlobalSettings',
+          payload: { ...this.globalSettings, autopilotPrompts: nextPrompts }
         });
       });
     });

@@ -67,8 +67,7 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
         ${session.queuedPrompts
           .map((item) => {
             return `
-              <div class="queue-stack-item" data-item-id="${item.itemId}">
-                <button class="queue-drag-handle" data-item-id="${item.itemId}" draggable="true" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</button>
+              <div class="queue-stack-item" data-item-id="${item.itemId}" draggable="true">
                 <div class="queue-stack-item-body">
                   <div class="queue-stack-item-text">${escapeHtml(item.content)}</div>
                   <textarea class="queue-inline-editor is-hidden" data-item-id="${item.itemId}" rows="2">${escapeHtml(item.content)}</textarea>
@@ -213,7 +212,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             <div class="settings-section-label">Autopilot prompts</div>
             <div id="autopilot-prompts-list" class="autopilot-prompts-list">
               ${globalSettings.autopilotPrompts.map((prompt, idx) => `
-                <div class="autopilot-prompt-item" data-prompt-index="${idx}">
+                <div class="autopilot-prompt-item" data-prompt-index="${idx}" draggable="true">
                   <div class="autopilot-prompt-number">${idx + 1}</div>
                   <div class="autopilot-prompt-text">${escapeHtml(prompt)}</div>
                   <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt">&times;</button>
@@ -221,8 +220,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               `).join('')}
             </div>
             <div class="autopilot-prompt-add-row">
-              <textarea id="autopilot-prompt-new" class="autopilot-prompt-textarea" rows="2" placeholder="New autopilot prompt…"></textarea>
-              <button id="autopilot-prompt-add" class="secondary-button">Add</button>
+              <button id="autopilot-prompt-add" class="secondary-button">Add prompt</button>
             </div>
             <div class="settings-section-label" style="margin-top:8px">Response delay</div>
             <div class="setting-row">
@@ -232,6 +230,21 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             <div class="setting-row">
               <span>Max (ms)</span>
               <input id="autopilot-delay-max" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMaxMs}" />
+            </div>
+          </div>
+        </div>
+        <div id="autopilot-prompt-modal-backdrop" class="settings-modal-backdrop autopilot-prompt-modal-backdrop is-hidden">
+          <div class="settings-modal autopilot-prompt-modal" role="dialog" aria-label="Add autopilot prompt">
+            <div class="settings-modal-header">
+              <span>Add autopilot prompt</span>
+              <button id="autopilot-prompt-modal-close" class="settings-modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="settings-modal-body">
+              <textarea id="autopilot-prompt-new" class="autopilot-prompt-textarea" rows="4" placeholder="New autopilot prompt…"></textarea>
+            </div>
+            <div class="autopilot-prompt-modal-actions">
+              <button id="autopilot-prompt-cancel" class="secondary-button">Cancel</button>
+              <button id="autopilot-prompt-save" class="secondary-button">Add</button>
             </div>
           </div>
         </div>

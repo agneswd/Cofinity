@@ -570,7 +570,7 @@ body {
 
 .queue-stack-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 4px 10px;
@@ -578,13 +578,17 @@ body {
   font-size: 12px;
   line-height: 1.4;
   color: var(--vscode-descriptionForeground);
+  cursor: grab;
 }
 
 .queue-stack-item.is-drag-target {
   background: var(--vscode-list-dropBackground, var(--vscode-list-hoverBackground));
 }
 
-.queue-drag-handle,
+.queue-stack-item:active {
+  cursor: grabbing;
+}
+
 .queue-edit-button,
 .queue-save-button,
 .queue-cancel-button {
@@ -596,14 +600,9 @@ body {
   padding: 0;
 }
 
-.queue-drag-handle {
-  letter-spacing: -1px;
-}
-
 .queue-edit-button:hover,
 .queue-save-button:hover,
-.queue-cancel-button:hover,
-.queue-drag-handle:hover {
+.queue-cancel-button:hover {
   color: var(--vscode-foreground);
 }
 
@@ -933,10 +932,19 @@ body {
   gap: 6px;
   padding: 4px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--vscode-panel-border) 50%, transparent);
+  cursor: grab;
 }
 
 .autopilot-prompt-item:last-child {
   border-bottom: none;
+}
+
+.autopilot-prompt-item.is-drag-target {
+  background: var(--vscode-list-dropBackground, var(--vscode-list-hoverBackground));
+}
+
+.autopilot-prompt-item:active {
+  cursor: grabbing;
 }
 
 .autopilot-prompt-number {
@@ -975,8 +983,7 @@ body {
 
 .autopilot-prompt-add-row {
   display: flex;
-  gap: 6px;
-  align-items: flex-end;
+  justify-content: flex-start;
   margin-bottom: 4px;
 }
 
@@ -991,6 +998,21 @@ body {
   line-height: 1.4;
   resize: none;
   outline: none;
+}
+
+.autopilot-prompt-modal-backdrop {
+  z-index: 110;
+}
+
+.autopilot-prompt-modal {
+  width: min(420px, 92vw);
+}
+
+.autopilot-prompt-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 0 12px 12px;
 }
 
 /* ── Misc ────────────────────────────────────────────────── */
