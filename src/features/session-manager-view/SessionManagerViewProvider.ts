@@ -15,6 +15,16 @@ import {
   isWebviewToExtensionMessage
 } from './sessionManagerProtocolGuards';
 
+const CHAT_OPEN_COMMAND_CANDIDATES = [
+  'workbench.action.chat.open',
+  'workbench.panel.chat.view.copilot.focus',
+  'github.copilot.chat.open',
+  'github.copilot.chat.focus',
+  'vscode.editorChat.start'
+] as const;
+
+const CHAT_NEW_COMMAND_CANDIDATES = ['workbench.action.chat.newChat'] as const;
+
 export class SessionManagerViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   public static readonly viewType = 'cofinity.sessionManagerView';
 
@@ -72,16 +82,7 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
 
     switch (message.type) {
       case 'newCopilotSession':
-        void vscode.commands.executeCommand('workbench.action.chat.open', {
-          mode: 'agent',
-          query: '#new ',
-          isPartialQuery: true
-        }).then(
-          undefined,
-          () => {
-            this.postError('Failed to start a new Copilot session.');
-          }
-        );
+        void this.openNewCopilotSession();
         return;
       case 'selectSession':
         this.sessionRegistry.selectSession(message.payload.sessionId);
@@ -244,5 +245,35 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       type: 'openSettings',
       payload: {}
     });
+  }
+
+  private async openNewCopilotSession(): Promise<void> {
+    for (const commandId of CHAT_NEW_COMMAND_CANDIDATES) {
+      try {
+        await vscode.commands.executeCommand(commandId);
+        return;
+      } catch {
+        // Try the next candidate.
+      }
+    }
+
+    for (const commandId of CHAT_OPEN_COMMAND_CANDIDATES) {
+      try {
+        if (commandId === 'workbench.action.chat.open') {
+          await vscode.commands.executeCommand(commandId, {
+            mode: 'agent',
+            query: '#new ',
+            isPartialQuery: true
+          });
+        } else {
+          await vscode.commands.executeCommand(commandId);
+        }
+        return;
+      } catch {
+        // Try the next candidate.
+      }
+    }
+
+    this.postError('Failed to start a new Copilot session.');
   }
 }
