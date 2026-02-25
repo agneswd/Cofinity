@@ -43,6 +43,7 @@ export class SessionManagerApp {
   private sidebarCollapsed = false;
   private draggedQueuedPromptId: string | null = null;
   private draggedAutopilotPromptIndex: number | null = null;
+  private shouldRefocusComposer = false;
   private readonly toolCallsBySession = new Map<string, number>();
 
   constructor() {
@@ -226,6 +227,12 @@ export class SessionManagerApp {
     this.sessionDetailElement.innerHTML = renderSessionDetail(this.session, this.settingsOpen, this.globalSettings);
 
     this.bindSessionEvents();
+
+    if (this.shouldRefocusComposer) {
+      const composerTextarea = document.getElementById('composer-textarea') as HTMLTextAreaElement | null;
+      composerTextarea?.focus();
+      this.shouldRefocusComposer = false;
+    }
   }
 
   private bindSessionEvents(): void {
@@ -314,6 +321,7 @@ export class SessionManagerApp {
         sessionId: this.session?.sessionId,
         payload: { content }
       });
+      this.shouldRefocusComposer = true;
       composerTextarea.value = '';
       // Collapse back to min-height after send and keep focus
       composerTextarea.style.height = 'auto';
