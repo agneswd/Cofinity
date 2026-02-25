@@ -724,7 +724,7 @@ body {
 .composer-shell {
   flex-shrink: 0;
   border-top: 1px solid var(--vscode-panel-border);
-  padding: 0 10px 10px;
+  padding: 0 10px 10px 0;
 }
 
 .composer-hint {
