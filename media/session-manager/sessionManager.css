@@ -881,6 +881,13 @@ body {
   color: var(--vscode-input-foreground);
   font-size: 12px;
   text-align: center;
+  appearance: textfield;
+}
+
+.setting-input::-webkit-outer-spin-button,
+.setting-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* Reusable toggle switch for settings rows */

@@ -167,44 +167,44 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             <button id="settings-modal-close" class="settings-modal-close" aria-label="Close">&times;</button>
           </div>
           <div class="settings-modal-body">
-            <label class="setting-row">
-              <span>Autopilot</span>
+            <label class="setting-row" title="Automatically answers pending user questions using your autopilot prompts.">
+              <span title="Automatically answers pending user questions using your autopilot prompts.">Autopilot</span>
               <label class="setting-toggle">
                 <input id="autopilot-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row">
-              <span>Turn limit</span>
-              <input id="autopilot-max-turns" class="setting-input" type="number" min="1" max="100" value="${session.autopilotMaxTurns ?? 20}" />
+            <label class="setting-row" title="Maximum number of autopilot turns before it stops itself.">
+              <span title="Maximum number of autopilot turns before it stops itself.">Turn limit</span>
+              <input id="autopilot-max-turns" class="setting-input" type="number" min="1" max="100" value="${session.autopilotMaxTurns ?? 20}" title="Maximum number of autopilot turns before it stops itself." />
             </label>
-            <label class="setting-row">
-              <span>Sound</span>
+            <label class="setting-row" title="Play a notification sound when the agent needs your input.">
+              <span title="Play a notification sound when the agent needs your input.">Sound</span>
               <label class="setting-toggle">
                 <input id="sound-checkbox" type="checkbox" ${globalSettings.notificationSoundEnabled ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row">
-              <span>Auto-reveal panel</span>
+            <label class="setting-row" title="Automatically open this panel when a session starts waiting for you.">
+              <span title="Automatically open this panel when a session starts waiting for you.">Auto-reveal panel</span>
               <label class="setting-toggle">
                 <input id="auto-reveal-checkbox" type="checkbox" ${globalSettings.autoRevealEnabled ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row">
-              <span>Auto-queue prompts</span>
+            <label class="setting-row" title="Queue composer messages when the agent is not currently waiting for input.">
+              <span title="Queue composer messages when the agent is not currently waiting for input.">Auto-queue prompts</span>
               <label class="setting-toggle">
                 <input id="auto-queue-checkbox" type="checkbox" ${globalSettings.autoQueuePrompts ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row">
-              <span>Enter sends</span>
+            <label class="setting-row" title="Send with Enter. When off, use Ctrl/Cmd+Enter to send.">
+              <span title="Send with Enter. When off, use Ctrl/Cmd+Enter to send.">Enter sends</span>
               <label class="setting-toggle">
                 <input id="enter-sends-checkbox" type="checkbox" ${globalSettings.enterSends ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
@@ -212,27 +212,27 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               </label>
             </label>
             <div class="settings-section-divider"></div>
-            <div class="settings-section-label">Autopilot prompts</div>
+            <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot prompts</div>
             <div id="autopilot-prompts-list" class="autopilot-prompts-list">
               ${globalSettings.autopilotPrompts.map((prompt, idx) => `
-                <div class="autopilot-prompt-item" data-prompt-index="${idx}" draggable="true">
+                <div class="autopilot-prompt-item" data-prompt-index="${idx}" draggable="true" title="Drag to reorder this autopilot prompt.">
                   <div class="autopilot-prompt-number">${idx + 1}</div>
                   <div class="autopilot-prompt-text">${escapeHtml(prompt)}</div>
-                  <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt">&times;</button>
+                  <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt" title="Delete this autopilot prompt">&times;</button>
                 </div>
               `).join('')}
             </div>
             <div class="autopilot-prompt-add-row">
-              <button id="autopilot-prompt-add" class="secondary-button">Add prompt</button>
+              <button id="autopilot-prompt-add" class="secondary-button" title="Add a new autopilot prompt">Add prompt</button>
             </div>
-            <div class="settings-section-label" style="margin-top:8px">Response delay</div>
-            <div class="setting-row">
-              <span>Min (ms)</span>
-              <input id="autopilot-delay-min" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMinMs}" />
+            <div class="settings-section-label" style="margin-top:8px" title="Random delay window before autopilot sends a reply.">Response delay</div>
+            <div class="setting-row" title="Shortest delay before autopilot sends its next response.">
+              <span title="Shortest delay before autopilot sends its next response.">Min (ms)</span>
+              <input id="autopilot-delay-min" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMinMs}" title="Shortest delay before autopilot sends its next response." />
             </div>
-            <div class="setting-row">
-              <span>Max (ms)</span>
-              <input id="autopilot-delay-max" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMaxMs}" />
+            <div class="setting-row" title="Longest delay before autopilot sends its next response.">
+              <span title="Longest delay before autopilot sends its next response.">Max (ms)</span>
+              <input id="autopilot-delay-max" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMaxMs}" title="Longest delay before autopilot sends its next response." />
             </div>
           </div>
         </div>
@@ -243,11 +243,11 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               <button id="autopilot-prompt-modal-close" class="settings-modal-close" aria-label="Close">&times;</button>
             </div>
             <div class="settings-modal-body">
-              <textarea id="autopilot-prompt-new" class="autopilot-prompt-textarea" rows="4" placeholder="New autopilot prompt…"></textarea>
+              <textarea id="autopilot-prompt-new" class="autopilot-prompt-textarea" rows="4" placeholder="New autopilot prompt…" title="Type the autopilot prompt you want to add."></textarea>
             </div>
             <div class="autopilot-prompt-modal-actions">
-              <button id="autopilot-prompt-cancel" class="secondary-button">Cancel</button>
-              <button id="autopilot-prompt-save" class="secondary-button">Add</button>
+              <button id="autopilot-prompt-cancel" class="secondary-button" title="Close without adding a prompt">Cancel</button>
+              <button id="autopilot-prompt-save" class="secondary-button" title="Add this autopilot prompt">Add</button>
             </div>
           </div>
         </div>
