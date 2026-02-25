@@ -197,6 +197,7 @@ export class SessionManagerApp {
           };
 
           input.addEventListener('keydown', (e) => {
+            e.stopPropagation();
             if (e.key === 'Enter') {
               commit();
             } else if (e.key === 'Escape') {
@@ -205,6 +206,9 @@ export class SessionManagerApp {
               restored.textContent = currentTitle;
               input.replaceWith(restored);
             }
+          });
+          input.addEventListener('keyup', (e) => {
+            e.stopPropagation();
           });
           input.addEventListener('blur', commit);
         }
