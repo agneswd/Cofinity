@@ -168,19 +168,19 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
           </div>
           <div class="settings-modal-body">
             <label class="setting-row" title="Automatically answers pending user questions using your autopilot prompts.">
-              <span title="Automatically answers pending user questions using your autopilot prompts.">Autopilot</span>
+              <span title="Automatically answers pending user questions using your autopilot prompts.">Autopilot auto-reply</span>
               <label class="setting-toggle">
                 <input id="autopilot-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row" title="Maximum number of autopilot turns before it stops itself.">
-              <span title="Maximum number of autopilot turns before it stops itself.">Turn limit</span>
+            <label class="setting-row" title="Maximum number of autopilot replies before it stops itself.">
+              <span title="Maximum number of autopilot replies before it stops itself.">Autopilot turn limit</span>
               <input id="autopilot-max-turns" class="setting-input" type="number" min="1" max="100" value="${session.autopilotMaxTurns ?? 20}" title="Maximum number of autopilot turns before it stops itself." />
             </label>
             <label class="setting-row" title="Play a notification sound when the agent needs your input.">
-              <span title="Play a notification sound when the agent needs your input.">Sound</span>
+              <span title="Play a notification sound when the agent needs your input.">Notification sounds</span>
               <label class="setting-toggle">
                 <input id="sound-checkbox" type="checkbox" ${globalSettings.notificationSoundEnabled ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
@@ -188,7 +188,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               </label>
             </label>
             <label class="setting-row" title="Automatically open this panel when a session starts waiting for you.">
-              <span title="Automatically open this panel when a session starts waiting for you.">Auto-reveal panel</span>
+              <span title="Automatically open this panel when a session starts waiting for you.">Auto-open session panel</span>
               <label class="setting-toggle">
                 <input id="auto-reveal-checkbox" type="checkbox" ${globalSettings.autoRevealEnabled ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
@@ -196,7 +196,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               </label>
             </label>
             <label class="setting-row" title="Queue composer messages when the agent is not currently waiting for input.">
-              <span title="Queue composer messages when the agent is not currently waiting for input.">Auto-queue prompts</span>
+              <span title="Queue composer messages when the agent is not currently waiting for input.">Queue messages when agent is busy</span>
               <label class="setting-toggle">
                 <input id="auto-queue-checkbox" type="checkbox" ${globalSettings.autoQueuePrompts ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
@@ -204,7 +204,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               </label>
             </label>
             <label class="setting-row" title="Send with Enter. When off, use Ctrl/Cmd+Enter to send.">
-              <span title="Send with Enter. When off, use Ctrl/Cmd+Enter to send.">Enter sends</span>
+              <span title="Send with Enter. When off, use Ctrl/Cmd+Enter to send.">Press Enter to send</span>
               <label class="setting-toggle">
                 <input id="enter-sends-checkbox" type="checkbox" ${globalSettings.enterSends ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
@@ -212,7 +212,7 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
               </label>
             </label>
             <div class="settings-section-divider"></div>
-            <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot prompts</div>
+            <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot reply prompts</div>
             <div id="autopilot-prompts-list" class="autopilot-prompts-list">
               ${globalSettings.autopilotPrompts.map((prompt, idx) => `
                 <div class="autopilot-prompt-item" data-prompt-index="${idx}" draggable="true" title="Drag to reorder this autopilot prompt.">
@@ -225,13 +225,13 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
             <div class="autopilot-prompt-add-row">
               <button id="autopilot-prompt-add" class="secondary-button" title="Add a new autopilot prompt">Add prompt</button>
             </div>
-            <div class="settings-section-label" style="margin-top:8px" title="Random delay window before autopilot sends a reply.">Response delay</div>
+            <div class="settings-section-label" style="margin-top:8px" title="Random delay window before autopilot sends a reply.">Autopilot reply delay</div>
             <div class="setting-row" title="Shortest delay before autopilot sends its next response.">
-              <span title="Shortest delay before autopilot sends its next response.">Min (ms)</span>
+              <span title="Shortest delay before autopilot sends its next response.">Minimum delay (ms)</span>
               <input id="autopilot-delay-min" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMinMs}" title="Shortest delay before autopilot sends its next response." />
             </div>
             <div class="setting-row" title="Longest delay before autopilot sends its next response.">
-              <span title="Longest delay before autopilot sends its next response.">Max (ms)</span>
+              <span title="Longest delay before autopilot sends its next response.">Maximum delay (ms)</span>
               <input id="autopilot-delay-max" class="setting-input" type="number" min="500" max="30000" step="100" value="${globalSettings.autopilotDelayMaxMs}" title="Longest delay before autopilot sends its next response." />
             </div>
           </div>
