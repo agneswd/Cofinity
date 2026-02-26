@@ -1,3 +1,4 @@
+import { createIcons } from 'lucide';
 import type {
   AttachmentInfo,
   ExtensionMessage,
@@ -83,6 +84,8 @@ export class SessionManagerApp {
       type: 'uiReady',
       payload: {}
     });
+
+    this.refreshIcons();
   }
 
   private handleMessage(message: ExtensionMessage): void {
@@ -158,6 +161,7 @@ export class SessionManagerApp {
 
     this.sessionsListElement.className = 'session-list';
     this.sessionsListElement.innerHTML = renderSessionsList(this.sessions, this.selectedSessionId);
+    this.refreshIcons();
 
     // Select on clicking the main card area
     this.sessionsListElement.querySelectorAll<HTMLButtonElement>('.session-card-select').forEach((btn) => {
@@ -250,6 +254,7 @@ export class SessionManagerApp {
     );
 
     this.bindSessionEvents();
+    this.refreshIcons();
 
     if (this.shouldRefocusComposer) {
       const composerTextarea = document.getElementById('composer-textarea') as HTMLTextAreaElement | null;
@@ -809,5 +814,15 @@ export class SessionManagerApp {
       this.settingsOpen = true;
       backdrop.classList.remove('is-hidden');
     }
+  }
+
+  private refreshIcons(): void {
+    createIcons({
+      attrs: {
+        width: '14',
+        height: '14',
+        'stroke-width': '1.8'
+      }
+    });
   }
 }

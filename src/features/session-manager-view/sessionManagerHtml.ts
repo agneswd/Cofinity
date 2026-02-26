@@ -41,11 +41,11 @@ export function buildSessionManagerHtml(
     </main>
     <aside class="session-list-panel">
       <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
-        <span class="sidebar-toggle-icon">&#x276F;</span>
+        <span class="sidebar-toggle-icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
       </button>
       <div class="panel-heading">
         <span>Sessions</span>
-        <button id="new-session-button" class="panel-heading-action" aria-label="Start a new Copilot session">New session</button>
+        <button id="new-session-button" class="panel-heading-action" aria-label="Start a new Copilot session"><i data-lucide="plus"></i><span>New session</span></button>
       </div>
       <div id="sessions-list" class="session-list empty-state">No active sessions yet.</div>
     </aside>

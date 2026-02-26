@@ -63,7 +63,9 @@ body {
 }
 
 .sidebar-toggle-icon {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.12s;
 }
 
@@ -149,6 +151,9 @@ body {
 }
 
 .panel-heading-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid var(--vscode-panel-border);
   background: transparent;
   color: var(--vscode-descriptionForeground);
@@ -247,6 +252,7 @@ body {
   background: var(--vscode-toolbar-hoverBackground);
 }
 
+.session-action-btn i,
 .session-action-btn svg {
   width: 13px;
   height: 13px;
@@ -523,6 +529,9 @@ body {
 }
 
 .attachment-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -844,6 +853,15 @@ body {
 
 .composer-send-button {
   min-width: 30px;
+}
+
+.composer-footer-button i,
+.panel-heading-action i,
+.attachment-chip-icon i,
+.queue-delete-button i,
+.sidebar-toggle-icon i {
+  width: 14px;
+  height: 14px;
 }
 
 /* ── Settings modal ─────────────────────────────────────── */

@@ -1,14 +1,6 @@
 import { escapeHtml, formatDuration, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
 import type { AttachmentInfo, GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
-function settingsIcon(): string {
-  return `
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M10.3 2.76a1 1 0 0 1 1.4 0l.98.99a7.9 7.9 0 0 1 1.89.79l1.36-.3a1 1 0 0 1 1.16.67l.56 1.67a7.6 7.6 0 0 1 1.45 1.44l1.67.56a1 1 0 0 1 .67 1.17l-.3 1.35c.33.6.6 1.23.79 1.89l.99.98a1 1 0 0 1 0 1.41l-.99.98a7.9 7.9 0 0 1-.79 1.89l.3 1.36a1 1 0 0 1-.67 1.16l-1.67.56a7.6 7.6 0 0 1-1.44 1.45l-.56 1.67a1 1 0 0 1-1.17.67l-1.35-.3a7.9 7.9 0 0 1-1.89.79l-.98.99a1 1 0 0 1-1.41 0l-.98-.99a7.9 7.9 0 0 1-1.89-.79l-1.36.3a1 1 0 0 1-1.16-.67l-.56-1.67A7.6 7.6 0 0 1 4.4 18.6l-1.67-.56a1 1 0 0 1-.67-1.17l.3-1.35a7.9 7.9 0 0 1-.79-1.89l-.99-.98a1 1 0 0 1 0-1.41l.99-.98c.18-.66.45-1.29.79-1.89l-.3-1.36a1 1 0 0 1 .67-1.16l1.67-.56A7.6 7.6 0 0 1 5.84 5.3l.56-1.67a1 1 0 0 1 1.17-.67l1.35.3c.6-.33 1.23-.6 1.89-.79l.98-.99ZM12 8.75A3.25 3.25 0 1 0 12 15.25A3.25 3.25 0 1 0 12 8.75Z" fill="currentColor"/>
-    </svg>
-  `;
-}
-
 function renderChatMessages(messages: SessionChatMessage[]): string {
   if (messages.length === 0) {
     return '<div class="empty-state">No messages yet.</div>';
@@ -59,7 +51,7 @@ function renderAttachmentChips(attachments?: AttachmentInfo[], removable = false
         .map(
           (attachment) => `
             <div class="attachment-chip" title="${escapeHtml(attachment.name)}">
-              <span class="attachment-chip-icon">IMG</span>
+              <span class="attachment-chip-icon" aria-hidden="true"><i data-lucide="image"></i></span>
               <span class="attachment-chip-text">${escapeHtml(attachment.name)}</span>
               ${
                 removable
@@ -103,7 +95,7 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
                 <div class="queue-stack-item-actions">
                   <button class="queue-edit-button" data-item-id="${item.itemId}" title="Edit queued prompt">Edit</button>
                   <button class="queue-delete-button" data-item-id="${item.itemId}" title="Delete queued prompt" aria-label="Delete queued prompt">
-                    <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" aria-hidden="true"><path d="M7 3h2v1H7V3ZM3 5h10v1h-1v7H4V6H3V5Zm2 1v6h6V6H5Z"/></svg>
+                    <i data-lucide="trash-2" aria-hidden="true"></i>
                   </button>
                   <button class="queue-save-button is-hidden" data-item-id="${item.itemId}" title="Save queued prompt">Save</button>
                   <button class="queue-cancel-button is-hidden" data-item-id="${item.itemId}" title="Cancel editing queued prompt">Cancel</button>
@@ -151,10 +143,10 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
           </button>
           <div class="session-card-actions">
             <button class="session-action-btn" data-action="rename" data-session-id="${session.sessionId}" title="Rename session">
-              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.23 1a1.1 1.1 0 0 1 .78.33l.66.66a1.1 1.1 0 0 1 0 1.56L5.5 12.73 2 14l1.27-3.5L12.45 1.33A1.1 1.1 0 0 1 13.23 1ZM3.5 11.5l-.5 1.5 1.5-.5 8.5-8.5-1-1L3.5 11.5Z"/></svg>
+              <i data-lucide="pencil" aria-hidden="true"></i>
             </button>
             <button class="session-action-btn" data-action="dispose" data-session-id="${session.sessionId}" title="Dispose session">
-              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M7 3h2v1H7V3ZM3 5h10v1h-1v7H4V6H3V5Zm2 1v6h6V6H5Z"/></svg>
+              <i data-lucide="trash-2" aria-hidden="true"></i>
             </button>
           </div>
         </div>
@@ -307,9 +299,9 @@ export function renderSessionDetail(
           </div>
           <div class="composer-footer-actions">
             <input id="composer-image-input" class="is-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple />
-            <button id="attach-image-button" class="composer-footer-button" title="Attach image" aria-label="Attach image">Image</button>
+            <button id="attach-image-button" class="composer-footer-button" title="Attach image" aria-label="Attach image"><i data-lucide="image-plus" aria-hidden="true"></i></button>
             <button id="send-button" class="composer-footer-button composer-send-button" title="Send" aria-label="Send">
-              <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M1.5 1l13 7-13 7V9.5l9-1.5-9-1.5V1z"/></svg>
+              <i data-lucide="send" aria-hidden="true"></i>
             </button>
           </div>
         </div>
