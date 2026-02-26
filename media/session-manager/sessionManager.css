@@ -839,8 +839,8 @@ body {
   height: 28px;
   padding: 0 8px;
   border: 0;
-  background: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-secondaryBackground, var(--vscode-panel-border));
+  color: var(--vscode-button-secondaryForeground, var(--vscode-descriptionForeground));
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -853,6 +853,22 @@ body {
 
 .composer-send-button {
   min-width: 30px;
+  background: var(--vscode-button-secondaryBackground, var(--vscode-panel-border));
+  color: var(--vscode-button-secondaryForeground, var(--vscode-descriptionForeground));
+}
+
+.composer-send-button:not(:disabled) {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+}
+
+.composer-send-button:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.composer-send-button:disabled:hover {
+  background: var(--vscode-button-secondaryBackground, var(--vscode-panel-border));
 }
 
 .composer-footer-button i,

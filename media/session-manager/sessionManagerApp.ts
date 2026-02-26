@@ -299,6 +299,13 @@ export class SessionManagerApp {
 
     const currentDraftAttachments = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
     const draftComposerValue = this.draftComposerBySession.get(this.session.sessionId) ?? '';
+    const updateSendButtonState = () => {
+      if (!composerTextarea || !sendButton) {
+        return;
+      }
+
+      sendButton.disabled = composerTextarea.value.trim().length === 0;
+    };
 
     if (composerTextarea) {
       composerTextarea.value = draftComposerValue;
@@ -307,6 +314,7 @@ export class SessionManagerApp {
         composerTextarea.style.height = `${composerTextarea.scrollHeight}px`;
       }
     }
+    updateSendButtonState();
 
     // Modal: close button
     modalClose?.addEventListener('click', () => {
@@ -372,6 +380,7 @@ export class SessionManagerApp {
         this.draftAttachmentsBySession.set(this.session.sessionId, []);
       }
       composerTextarea.value = '';
+      updateSendButtonState();
       // Collapse back to min-height after send and keep focus
       composerTextarea.style.height = 'auto';
       composerTextarea.focus();
@@ -404,6 +413,7 @@ export class SessionManagerApp {
     if (composerTextarea) {
       composerTextarea.addEventListener('input', () => {
         this.draftComposerBySession.set(this.session!.sessionId, composerTextarea.value);
+        updateSendButtonState();
         composerTextarea.style.height = 'auto';
         composerTextarea.style.height = `${composerTextarea.scrollHeight}px`;
       });
