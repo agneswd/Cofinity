@@ -1,4 +1,5 @@
 import type {
+  AttachmentInfo,
   PendingUserRequest,
   SessionChatMessage,
   SessionId,
@@ -11,6 +12,7 @@ export interface QueuedPromptSnapshot {
   itemId: string;
   content: string;
   source: 'user' | 'system';
+  attachments?: AttachmentInfo[];
 }
 
 export interface SessionListItemSnapshot {
@@ -65,7 +67,8 @@ export function toSessionSnapshot(state: SessionState): SessionSnapshot {
     queuedPrompts: state.promptQueue.map((item) => ({
       itemId: item.itemId,
       content: item.content,
-      source: item.source
+      source: item.source,
+      attachments: item.attachments
     })),
     chatMessages: state.chatMessages,
     pendingRequest: state.pendingRequest,

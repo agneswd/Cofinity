@@ -10,7 +10,7 @@ import {
 } from './sessionSnapshot';
 import { SessionController, type SessionRestoreState } from './SessionController';
 import { SessionTokenRouter } from './SessionTokenRouter';
-import type { SessionId, SessionRequestKind } from './sessionTypes';
+import type { AttachmentInfo, SessionId, SessionRequestKind } from './sessionTypes';
 
 export interface HandleToolInvocationOptions {
   sessionId?: string;
@@ -99,22 +99,22 @@ export class SessionRegistry implements vscode.Disposable {
     this.onDidChangeStateEmitter.fire();
   }
 
-  public respondToPendingRequest(sessionId: SessionId, requestId: string, response: string): boolean {
+  public respondToPendingRequest(sessionId: SessionId, requestId: string, response: string, attachments: AttachmentInfo[] = []): boolean {
     const controller = this.controllers.get(sessionId);
     if (!controller) {
       return false;
     }
 
-    return controller.resolvePendingRequest(requestId, response);
+    return controller.resolvePendingRequest(requestId, response, attachments);
   }
 
-  public enqueuePrompt(sessionId: SessionId, content: string): boolean {
+  public enqueuePrompt(sessionId: SessionId, content: string, attachments: AttachmentInfo[] = []): boolean {
     const controller = this.controllers.get(sessionId);
     if (!controller) {
       return false;
     }
 
-    controller.enqueuePrompt(content);
+    controller.enqueuePrompt(content, attachments);
     return true;
   }
 

@@ -1,5 +1,5 @@
 import { escapeHtml, formatDuration, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
-import type { GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
+import type { AttachmentInfo, GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
 function settingsIcon(): string {
   return `
@@ -36,6 +36,7 @@ function renderChatMessages(messages: SessionChatMessage[]): string {
       return `
         <article class="chat-message role-${message.role}">
           <div class="chat-message-body">${escapeHtml(message.content)}</div>
+          ${renderAttachmentChips(message.attachments)}
           <div class="chat-message-meta">
             <span>${escapeHtml(stateLabel)}</span>
             ${durationLabel ? `<span class="chat-message-duration" title="Agent response time">${escapeHtml(durationLabel)}</span>` : ''}
@@ -45,6 +46,32 @@ function renderChatMessages(messages: SessionChatMessage[]): string {
       `;
     })
     .join('');
+}
+
+function renderAttachmentChips(attachments?: AttachmentInfo[], removable = false): string {
+  if (!attachments || attachments.length === 0) {
+    return '';
+  }
+
+  return `
+    <div class="attachment-chips">
+      ${attachments
+        .map(
+          (attachment) => `
+            <div class="attachment-chip" title="${escapeHtml(attachment.name)}">
+              <span class="attachment-chip-icon">IMG</span>
+              <span class="attachment-chip-text">${escapeHtml(attachment.name)}</span>
+              ${
+                removable
+                  ? `<button class="attachment-chip-remove" data-attachment-id="${attachment.id}" data-attachment-uri="${escapeHtml(attachment.uri)}" data-attachment-temporary="${attachment.isTemporary ? 'true' : 'false'}" aria-label="Remove attachment">&times;</button>`
+                  : ''
+              }
+            </div>
+          `
+        )
+        .join('')}
+    </div>
+  `;
 }
 
 function renderQueuedPrompts(session: SessionSnapshot): string {
@@ -70,6 +97,7 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
               <div class="queue-stack-item" data-item-id="${item.itemId}" draggable="true">
                 <div class="queue-stack-item-body">
                   <div class="queue-stack-item-text">${escapeHtml(item.content)}</div>
+                  ${item.attachments?.length ? `<div class="queue-item-attachment-badge" title="${item.attachments.length} image attachment${item.attachments.length === 1 ? '' : 's'}">${item.attachments.length} image${item.attachments.length === 1 ? '' : 's'}</div>` : ''}
                   <textarea class="queue-inline-editor is-hidden" data-item-id="${item.itemId}" rows="2">${escapeHtml(item.content)}</textarea>
                 </div>
                 <div class="queue-stack-item-actions">
@@ -135,7 +163,12 @@ export function renderSessionsList(sessions: SessionListItem[], selectedSessionI
     .join('');
 }
 
-export function renderSessionDetail(session: SessionSnapshot, settingsOpen: boolean, globalSettings: GlobalSettings): string {
+export function renderSessionDetail(
+  session: SessionSnapshot,
+  settingsOpen: boolean,
+  globalSettings: GlobalSettings,
+  draftAttachments: AttachmentInfo[]
+): string {
   const statusLabel = formatStatusLabel(session.status);
   const hint = session.pendingRequest
     ? 'Agent is waiting for your reply'
@@ -259,21 +292,29 @@ export function renderSessionDetail(session: SessionSnapshot, settingsOpen: bool
       ${renderQueuedPrompts(session)}
       <footer class="composer-shell">
         ${hint ? `<div class="composer-hint">${escapeHtml(hint)}</div>` : ''}
+        ${renderAttachmentChips(draftAttachments, true)}
         <div class="composer-row">
           <textarea id="composer-textarea" class="composer-textarea" placeholder="${escapeHtml(composerPlaceholder)}"></textarea>
-          <button id="send-button" class="composer-button" title="Send (Ctrl+Enter)" aria-label="Send">
-            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M1.5 1l13 7-13 7V9.5l9-1.5-9-1.5V1z"/></svg>
-          </button>
         </div>
-      </footer>
-      <div class="autopilot-bar">
-        <label class="autopilot-toggle">
-          <input id="autopilot-bar-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
-          <span class="autopilot-toggle-track"></span>
-          <span class="autopilot-toggle-thumb"></span>
-        </label>
-        <span class="autopilot-bar-label">Autopilot</span>
+        <div class="composer-footer-row">
+          <div class="composer-footer-left">
+            <label class="autopilot-toggle">
+              <input id="autopilot-bar-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
+              <span class="autopilot-toggle-track"></span>
+              <span class="autopilot-toggle-thumb"></span>
+            </label>
+            <span class="autopilot-bar-label">Autopilot</span>
+          </div>
+          <div class="composer-footer-actions">
+            <input id="composer-image-input" class="is-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple />
+            <button id="attach-image-button" class="composer-footer-button" title="Attach image" aria-label="Attach image">Image</button>
+            <button id="send-button" class="composer-footer-button composer-send-button" title="Send" aria-label="Send">
+              <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M1.5 1l13 7-13 7V9.5l9-1.5-9-1.5V1z"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
+      </footer>
     </div>
   `;
 }

@@ -503,6 +503,52 @@ body {
   opacity: 0.75;
 }
 
+.attachment-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 7px;
+  border: 1px solid var(--vscode-panel-border);
+  background: color-mix(in srgb, var(--vscode-button-background) 12%, transparent);
+  color: var(--vscode-descriptionForeground);
+  font-size: 10px;
+}
+
+.attachment-chip-icon {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--vscode-foreground);
+}
+
+.attachment-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-chip-remove {
+  border: 0;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+
+.attachment-chip-remove:hover {
+  color: var(--vscode-foreground);
+}
+
 /* ── Queue stack above composer ─────────────────────────── */
 
 .queue-stack {
@@ -633,6 +679,12 @@ body {
   min-width: 0;
 }
 
+.queue-item-attachment-badge {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+}
+
 .queue-stack-item-text {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -659,17 +711,7 @@ body {
   display: none;
 }
 
-/* ── Autopilot footer row ───────────────────────────────── */
-
-.autopilot-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  border-top: 1px solid var(--vscode-panel-border);
-  font-size: 12px;
-}
+/* ── Composer footer controls ───────────────────────────── */
 
 .autopilot-bar-label {
   color: var(--vscode-descriptionForeground);
@@ -725,10 +767,11 @@ body {
   flex-shrink: 0;
   border-top: 1px solid var(--vscode-panel-border);
   padding: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--vscode-editorWidget-background) 70%, transparent);
 }
 
 .composer-hint {
-  padding: 4px 10px 2px;
+  padding: 4px 10px 2px 0;
   font-size: 10px;
   color: var(--vscode-descriptionForeground);
   letter-spacing: 0.02em;
@@ -736,15 +779,15 @@ body {
 
 .composer-row {
   display: flex;
-  position: relative;
 }
 
 .composer-textarea {
   flex: 1;
   min-height: 36px;
   max-height: 160px;
-  padding: 7px 40px 7px 9px;
+  padding: 8px 9px;
   border: 1px solid var(--vscode-panel-border);
+  border-bottom: 0;
   resize: none;
   overflow-y: auto;
   background: var(--vscode-input-background);
@@ -765,29 +808,42 @@ body {
   border-color: var(--vscode-focusBorder);
 }
 
-.composer-button {
-  position: absolute;
-  right: 5px;
-  bottom: 5px;
-  width: 26px;
-  height: 26px;
+.composer-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 9px;
+  border: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-input-background);
+}
+
+.composer-footer-left,
+.composer-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composer-footer-button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
   border: 0;
   background: var(--vscode-button-background);
   color: var(--vscode-button-foreground);
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  opacity: 0.85;
-  transition: opacity 0.1s;
 }
 
-.composer-button:hover {
-  opacity: 1;
+.composer-footer-button:hover {
   background: var(--vscode-button-hoverBackground);
+}
+
+.composer-send-button {
+  min-width: 30px;
 }
 
 /* ── Settings modal ─────────────────────────────────────── */

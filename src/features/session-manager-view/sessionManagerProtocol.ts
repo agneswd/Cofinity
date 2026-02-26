@@ -1,3 +1,4 @@
+import type { AttachmentInfo } from '../session-runtime/sessionTypes';
 import type { GlobalSettings } from '../global-settings/globalSettings';
 import type { SessionSnapshot, SessionManagerSnapshot } from '../session-runtime/sessionSnapshot';
 
@@ -15,6 +16,7 @@ export type ExtensionToWebviewMessage =
   | ProtocolEnvelope<'sessionsSnapshot', SessionManagerSnapshot>
   | ProtocolEnvelope<'sessionSnapshot', { session: SessionSnapshot | null }>
   | ProtocolEnvelope<'globalSettings', GlobalSettings>
+  | ProtocolEnvelope<'imageSaved', { attachment: AttachmentInfo }>
   | ProtocolEnvelope<'error', { message: string }>
   | ProtocolEnvelope<'openSettings', Record<string, never>>;
 
@@ -22,7 +24,9 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
   | ProtocolEnvelope<'newCopilotSession', Record<string, never>>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
-  | ProtocolEnvelope<'submitComposerInput', { content: string }>
+  | ProtocolEnvelope<'submitComposerInput', { content: string; attachments: AttachmentInfo[] }>
+  | ProtocolEnvelope<'saveImage', { data: string; mimeType: string }>
+  | ProtocolEnvelope<'removeDraftAttachment', { attachmentId: string; uri?: string; isTemporary?: boolean }>
   | ProtocolEnvelope<'updateQueuedPrompt', { itemId: string; content: string }>
   | ProtocolEnvelope<'removeQueuedPrompt', { itemId: string }>
   | ProtocolEnvelope<'reorderQueuedPrompt', { itemId: string; targetItemId: string }>

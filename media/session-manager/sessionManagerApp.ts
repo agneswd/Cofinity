@@ -1,4 +1,5 @@
 import type {
+  AttachmentInfo,
   ExtensionMessage,
   GlobalSettings,
   SessionListItem,
@@ -44,6 +45,8 @@ export class SessionManagerApp {
   private draggedQueuedPromptId: string | null = null;
   private draggedAutopilotPromptIndex: number | null = null;
   private shouldRefocusComposer = false;
+  private readonly draftComposerBySession = new Map<string, string>();
+  private readonly draftAttachmentsBySession = new Map<string, AttachmentInfo[]>();
   private readonly toolCallsBySession = new Map<string, number>();
 
   constructor() {
@@ -96,6 +99,17 @@ export class SessionManagerApp {
         this.globalSettings = message.payload;
         this.renderSession();
         return;
+      case 'imageSaved': {
+        if (!this.session) {
+          return;
+        }
+
+        const existing = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
+        this.draftAttachmentsBySession.set(this.session.sessionId, [...existing, message.payload.attachment]);
+        this.shouldRefocusComposer = true;
+        this.renderSession();
+        return;
+      }
       case 'error':
         this.renderInlineError(message.payload.message);
         return;
@@ -228,7 +242,12 @@ export class SessionManagerApp {
     }
 
     this.sessionDetailElement.className = 'session-detail chat-detail';
-    this.sessionDetailElement.innerHTML = renderSessionDetail(this.session, this.settingsOpen, this.globalSettings);
+    this.sessionDetailElement.innerHTML = renderSessionDetail(
+      this.session,
+      this.settingsOpen,
+      this.globalSettings,
+      this.draftAttachmentsBySession.get(this.session.sessionId) ?? []
+    );
 
     this.bindSessionEvents();
 
@@ -247,6 +266,8 @@ export class SessionManagerApp {
     const modalBackdrop = document.getElementById('settings-modal-backdrop') as HTMLDivElement | null;
     const modalClose = document.getElementById('settings-modal-close') as HTMLButtonElement | null;
     const composerTextarea = document.getElementById('composer-textarea') as HTMLTextAreaElement | null;
+    const composerImageInput = document.getElementById('composer-image-input') as HTMLInputElement | null;
+    const attachImageButton = document.getElementById('attach-image-button') as HTMLButtonElement | null;
     const sendButton = document.getElementById('send-button') as HTMLButtonElement | null;
     const autopilotCheckbox = document.getElementById('autopilot-checkbox') as HTMLInputElement | null;
     const autopilotBarCheckbox = document.getElementById('autopilot-bar-checkbox') as HTMLInputElement | null;
@@ -265,10 +286,22 @@ export class SessionManagerApp {
     const addPromptButton = document.getElementById('autopilot-prompt-add') as HTMLButtonElement | null;
     const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
     const autopilotPromptItems = Array.from(document.querySelectorAll<HTMLElement>('.autopilot-prompt-item'));
+    const attachmentRemoveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.attachment-chip-remove'));
     const queueEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-edit-button'));
     const queueDeleteButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-delete-button'));
     const queueSaveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-save-button'));
     const queueCancelButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-cancel-button'));
+
+    const currentDraftAttachments = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
+    const draftComposerValue = this.draftComposerBySession.get(this.session.sessionId) ?? '';
+
+    if (composerTextarea) {
+      composerTextarea.value = draftComposerValue;
+      composerTextarea.style.height = 'auto';
+      if (draftComposerValue) {
+        composerTextarea.style.height = `${composerTextarea.scrollHeight}px`;
+      }
+    }
 
     // Modal: close button
     modalClose?.addEventListener('click', () => {
@@ -323,22 +356,122 @@ export class SessionManagerApp {
         protocolVersion: 1,
         type: 'submitComposerInput',
         sessionId: this.session?.sessionId,
-        payload: { content }
+        payload: {
+          content,
+          attachments: currentDraftAttachments
+        }
       });
       this.shouldRefocusComposer = true;
+      if (this.session) {
+        this.draftComposerBySession.set(this.session.sessionId, '');
+        this.draftAttachmentsBySession.set(this.session.sessionId, []);
+      }
       composerTextarea.value = '';
       // Collapse back to min-height after send and keep focus
       composerTextarea.style.height = 'auto';
       composerTextarea.focus();
     });
 
+    const handleImageFiles = (files: File[]) => {
+      files
+        .filter((file) => file.type.startsWith('image/'))
+        .forEach((file) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result !== 'string') {
+              return;
+            }
+
+            this.vscode.postMessage({
+              protocolVersion: 1,
+              type: 'saveImage',
+              payload: {
+                data: reader.result,
+                mimeType: file.type || 'image/png'
+              }
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+    };
+
     // Auto-expand textarea as text grows
     if (composerTextarea) {
       composerTextarea.addEventListener('input', () => {
+        this.draftComposerBySession.set(this.session!.sessionId, composerTextarea.value);
         composerTextarea.style.height = 'auto';
         composerTextarea.style.height = `${composerTextarea.scrollHeight}px`;
       });
+
+      composerTextarea.addEventListener('paste', (event) => {
+        const clipboardItems = Array.from(event.clipboardData?.items ?? []);
+        const imageItems = clipboardItems.filter((item) => item.type.startsWith('image/'));
+        if (imageItems.length === 0) {
+          return;
+        }
+
+        event.preventDefault();
+        handleImageFiles(
+          imageItems
+            .map((item) => item.getAsFile())
+            .filter((file): file is File => file !== null)
+        );
+      });
+
+      composerTextarea.addEventListener('dragover', (event) => {
+        if (Array.from(event.dataTransfer?.items ?? []).some((item) => item.type.startsWith('image/'))) {
+          event.preventDefault();
+        }
+      });
+
+      composerTextarea.addEventListener('drop', (event) => {
+        const files = Array.from(event.dataTransfer?.files ?? []);
+        if (!files.some((file) => file.type.startsWith('image/'))) {
+          return;
+        }
+
+        event.preventDefault();
+        handleImageFiles(files);
+      });
     }
+
+    attachImageButton?.addEventListener('click', () => {
+      composerImageInput?.click();
+    });
+
+    composerImageInput?.addEventListener('change', () => {
+      handleImageFiles(Array.from(composerImageInput.files ?? []));
+
+      composerImageInput.value = '';
+    });
+
+    attachmentRemoveButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!this.session) {
+          return;
+        }
+
+        const attachmentId = button.dataset.attachmentId;
+        if (!attachmentId) {
+          return;
+        }
+
+        const currentAttachments = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
+        const nextAttachments = currentAttachments.filter((attachment) => attachment.id !== attachmentId);
+        this.draftAttachmentsBySession.set(this.session.sessionId, nextAttachments);
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'removeDraftAttachment',
+          payload: {
+            attachmentId,
+            uri: button.dataset.attachmentUri,
+            isTemporary: button.dataset.attachmentTemporary === 'true'
+          }
+        });
+        this.shouldRefocusComposer = true;
+        this.renderSession();
+      });
+    });
 
     composerTextarea?.addEventListener('keydown', (event) => {
       const enterSends = this.globalSettings.enterSends;

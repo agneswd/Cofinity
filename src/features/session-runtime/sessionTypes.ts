@@ -1,5 +1,13 @@
 export type SessionId = string;
 
+export interface AttachmentInfo {
+  id: string;
+  name: string;
+  uri: string;
+  mimeType: string;
+  isTemporary?: boolean;
+}
+
 export type SessionStatus =
   | 'active'
   | 'waitingForUser'
@@ -16,6 +24,7 @@ export interface PromptQueueItem {
   content: string;
   source: 'user' | 'system';
   chatMessageId: string;
+  attachments?: AttachmentInfo[];
   enqueuedAtMs: number;
   status: 'queued' | 'sentToModel' | 'skipped';
 }
@@ -27,6 +36,7 @@ export interface SessionChatMessage {
   messageId: string;
   role: SessionChatMessageRole;
   content: string;
+  attachments?: AttachmentInfo[];
   state: SessionChatMessageState;
   createdAtMs: number;
   relatedRequestId?: string;

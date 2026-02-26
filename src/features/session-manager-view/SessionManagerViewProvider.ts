@@ -1,4 +1,7 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
+import type { AttachmentInfo } from '../session-runtime/sessionTypes';
 import { type GlobalSettings, GlobalSettingsManager } from '../global-settings/globalSettings';
 import type {
   SessionManagerSnapshot,
@@ -32,6 +35,7 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
 
   constructor(
     private readonly extensionUri: vscode.Uri,
+    private readonly storageUri: vscode.Uri,
     private readonly sessionRegistry: SessionRegistry,
     private readonly settingsManager: GlobalSettingsManager
   ) {}
@@ -105,7 +109,7 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
         }
 
         if (session.pendingRequest) {
-          if (!this.sessionRegistry.respondToPendingRequest(message.sessionId, session.pendingRequest.requestId, content)) {
+          if (!this.sessionRegistry.respondToPendingRequest(message.sessionId, session.pendingRequest.requestId, content, message.payload.attachments)) {
             this.postError('Failed to resolve pending request. The request may be stale.');
           }
           return;
@@ -116,11 +120,17 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
           return;
         }
 
-        if (!this.sessionRegistry.enqueuePrompt(message.sessionId, content)) {
+        if (!this.sessionRegistry.enqueuePrompt(message.sessionId, content, message.payload.attachments)) {
           this.postError('Failed to queue the prompt for the selected session.');
         }
         return;
       }
+      case 'saveImage':
+        void this.saveImageAttachment(message.payload.data, message.payload.mimeType);
+        return;
+      case 'removeDraftAttachment':
+        this.removeDraftAttachment(message.payload);
+        return;
       case 'updateQueuedPrompt':
         if (!message.sessionId) {
           this.postError('Missing sessionId for updateQueuedPrompt.');
@@ -245,6 +255,72 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       type: 'openSettings',
       payload: {}
     });
+  }
+
+  private async saveImageAttachment(dataUrl: string, mimeType: string): Promise<void> {
+    const validMimeTypes = new Map<string, string>([
+      ['image/png', '.png'],
+      ['image/jpeg', '.jpg'],
+      ['image/gif', '.gif'],
+      ['image/webp', '.webp'],
+      ['image/bmp', '.bmp']
+    ]);
+    const maxImageSizeBytes = 10 * 1024 * 1024;
+    const extension = validMimeTypes.get(mimeType);
+    const base64Match = dataUrl.match(/^data:[^;]+;base64,(.+)$/);
+
+    if (!extension || !base64Match) {
+      this.postError('Unsupported image attachment.');
+      return;
+    }
+
+    const estimatedSize = Math.ceil(base64Match[1].length * 0.75);
+    if (estimatedSize > maxImageSizeBytes) {
+      this.postError('Image attachment is too large. Max 10MB.');
+      return;
+    }
+
+    const buffer = Buffer.from(base64Match[1], 'base64');
+    if (buffer.length > maxImageSizeBytes) {
+      this.postError('Image attachment is too large. Max 10MB.');
+      return;
+    }
+
+    const tempDir = path.join(this.storageUri.fsPath, 'temp-images');
+    fs.mkdirSync(tempDir, { recursive: true });
+
+    const fileName = `image-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${extension}`;
+    const filePath = path.join(tempDir, fileName);
+    fs.writeFileSync(filePath, buffer);
+
+    this.postMessage({
+      protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
+      type: 'imageSaved',
+      payload: {
+        attachment: {
+          id: `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          name: fileName,
+          uri: vscode.Uri.file(filePath).toString(),
+          mimeType,
+          isTemporary: true
+        }
+      }
+    });
+  }
+
+  private removeDraftAttachment(attachment: { attachmentId: string; uri?: string; isTemporary?: boolean }): void {
+    if (!attachment.isTemporary || !attachment.uri) {
+      return;
+    }
+
+    try {
+      const filePath = vscode.Uri.parse(attachment.uri).fsPath;
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    } catch {
+      // Ignore attachment cleanup failures.
+    }
   }
 
   private async openNewCopilotSession(): Promise<void> {

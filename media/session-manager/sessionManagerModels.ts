@@ -1,3 +1,11 @@
+export type AttachmentInfo = {
+  id: string;
+  name: string;
+  uri: string;
+  mimeType: string;
+  isTemporary?: boolean;
+};
+
 export type GlobalSettings = {
   notificationSoundEnabled: boolean;
   autoRevealEnabled: boolean;
@@ -22,6 +30,7 @@ export type SessionChatMessage = {
   messageId: string;
   role: 'assistant' | 'user' | 'system';
   content: string;
+  attachments?: AttachmentInfo[];
   state: 'pending' | 'queued' | 'delivered' | 'skipped';
   createdAtMs: number;
   relatedRequestId?: string;
@@ -36,6 +45,7 @@ export type SessionSnapshot = {
     itemId: string;
     content: string;
     source: 'user' | 'system';
+    attachments?: AttachmentInfo[];
   }>;
   chatMessages: SessionChatMessage[];
   pendingRequest: null | {
@@ -75,5 +85,6 @@ export type ExtensionMessage =
   | { type: 'sessionsSnapshot'; payload: SessionsSnapshotPayload }
   | { type: 'sessionSnapshot'; payload: SessionSnapshotPayload }
   | { type: 'globalSettings'; payload: GlobalSettings }
+  | { type: 'imageSaved'; payload: { attachment: AttachmentInfo } }
   | { type: 'error'; payload: { message: string } }
   | { type: 'openSettings'; payload: Record<string, never> };

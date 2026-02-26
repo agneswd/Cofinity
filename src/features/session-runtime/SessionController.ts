@@ -4,6 +4,7 @@ import type { CofinityRequestInputResult } from '../cofinity-tool/cofinityToolRe
 import { Deferred } from './Deferred';
 import { Mutex } from './Mutex';
 import type {
+  AttachmentInfo,
   AutopilotState,
   PendingUserRequest,
   PromptQueueItem,
@@ -33,11 +34,16 @@ export interface SessionRestoreState {
   stats: SessionState['stats'];
 }
 
+interface PendingResponsePayload {
+  response: string;
+  attachments: AttachmentInfo[];
+}
+
 export class SessionController implements vscode.Disposable {
   private readonly onDidChangeStateEmitter = new vscode.EventEmitter<void>();
   private readonly mutex = new Mutex();
 
-  private pendingResponse: Deferred<string> | null = null;
+  private pendingResponse: Deferred<PendingResponsePayload> | null = null;
   private pendingCancellation: vscode.Disposable | null = null;
 
   private readonly sessionState: SessionState;
@@ -95,7 +101,7 @@ export class SessionController implements vscode.Disposable {
     return this.mutex.runExclusive(async () => this.handleRequest(options));
   }
 
-  public enqueuePrompt(content: string): void {
+  public enqueuePrompt(content: string, attachments: AttachmentInfo[] = []): void {
     const trimmed = content.trim();
 
     if (!trimmed) {
@@ -108,6 +114,7 @@ export class SessionController implements vscode.Disposable {
       content: trimmed,
       source: 'user',
       chatMessageId,
+      attachments: attachments.length > 0 ? attachments.map((attachment) => ({ ...attachment })) : undefined,
       enqueuedAtMs: Date.now(),
       status: 'queued'
     };
@@ -209,7 +216,7 @@ export class SessionController implements vscode.Disposable {
     this.onDidChangeStateEmitter.fire();
   }
 
-  public resolvePendingRequest(requestId: string, response: string): boolean {
+  public resolvePendingRequest(requestId: string, response: string, attachments: AttachmentInfo[] = []): boolean {
     if (!this.sessionState.pendingRequest || !this.pendingResponse) {
       return false;
     }
@@ -218,7 +225,10 @@ export class SessionController implements vscode.Disposable {
       return false;
     }
 
-    this.pendingResponse.resolve(response.trim());
+    this.pendingResponse.resolve({
+      response: response.trim(),
+      attachments: attachments.map((attachment) => ({ ...attachment }))
+    });
     return true;
   }
 
@@ -265,6 +275,7 @@ export class SessionController implements vscode.Disposable {
           return {
             sessionId: this.sessionState.sessionId,
             response: queuedPrompt.content,
+            attachments: queuedPrompt.attachments,
             source,
             queuedRemaining: this.sessionState.promptQueue.length,
             waiting: false
@@ -305,7 +316,7 @@ export class SessionController implements vscode.Disposable {
       createdAtMs: pendingRequest.createdAtMs,
       relatedRequestId: pendingRequest.requestId
     });
-    this.pendingResponse = new Deferred<string>();
+    this.pendingResponse = new Deferred<PendingResponsePayload>();
     this.pendingCancellation = options.token.onCancellationRequested(() => {
       this.sessionState.stats.cancellations += 1;
       this.sessionState.inflight = this.sessionState.inflight
@@ -322,13 +333,21 @@ export class SessionController implements vscode.Disposable {
     this.onDidChangeStateEmitter.fire();
 
     try {
-      const response = await this.pendingResponse.promise;
+      const pendingResponse = this.pendingResponse;
+      if (!pendingResponse) {
+        throw new Error('Pending response was cleared before resolution.');
+      }
+
+      const pendingResolution = await pendingResponse.promise;
+      const response = pendingResolution.response;
+      const attachments = pendingResolution.attachments;
       this.sessionState.stats.userResponses += 1;
       this.markRequestMessageResolved(pendingRequest.requestId);
       this.appendChatMessage({
         messageId: createMessageId(),
         role: 'user',
         content: response,
+        attachments,
         state: 'delivered',
         createdAtMs: Date.now(),
         relatedRequestId: pendingRequest.requestId
@@ -338,6 +357,7 @@ export class SessionController implements vscode.Disposable {
       return {
         sessionId: this.sessionState.sessionId,
         response,
+        attachments,
         source: 'user',
         queuedRemaining: this.sessionState.promptQueue.length,
         waiting: false
@@ -363,6 +383,7 @@ export class SessionController implements vscode.Disposable {
       messageId: createMessageId(),
       role: 'user',
       content: next.content,
+      attachments: next.attachments,
       state: 'delivered',
       createdAtMs: Date.now()
     });

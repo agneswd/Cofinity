@@ -13,7 +13,8 @@ let sessionRegistry: SessionRegistry | undefined;
 export function activate(context: vscode.ExtensionContext): void {
   const registry = new SessionRegistry();
   const settingsManager = new GlobalSettingsManager(context.globalState);
-  const provider = new SessionManagerViewProvider(context.extensionUri, registry, settingsManager);
+  const storageUri = context.storageUri ?? context.globalStorageUri;
+  const provider = new SessionManagerViewProvider(context.extensionUri, storageUri, registry, settingsManager);
   const bridge = new SessionManagerStateBridge(registry, provider, settingsManager);
   const persistence = new SessionPersistence(context, registry);
   const cleanup = new SessionCleanup(registry);
