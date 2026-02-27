@@ -1,4 +1,13 @@
-import { createIcons } from 'lucide';
+import {
+  ChevronLeft,
+  createElement,
+  Image,
+  ImagePlus,
+  Pencil,
+  Plus,
+  Send,
+  Trash2
+} from 'lucide';
 import type {
   AttachmentInfo,
   ExtensionMessage,
@@ -16,6 +25,16 @@ declare function acquireVsCodeApi(): {
 };
 
 type WebviewApi = ReturnType<typeof acquireVsCodeApi>;
+
+const LUCIDE_ICONS = {
+  'chevron-left': ChevronLeft,
+  plus: Plus,
+  pencil: Pencil,
+  'trash-2': Trash2,
+  image: Image,
+  'image-plus': ImagePlus,
+  send: Send
+} as const;
 
 export class SessionManagerApp {
   private readonly vscode: WebviewApi;
@@ -827,12 +846,24 @@ export class SessionManagerApp {
   }
 
   private refreshIcons(): void {
-    createIcons({
-      attrs: {
+    document.querySelectorAll<HTMLElement>('[data-lucide]').forEach((placeholder) => {
+      const iconName = placeholder.dataset.lucide as keyof typeof LUCIDE_ICONS | undefined;
+      if (!iconName) {
+        return;
+      }
+
+      const iconDefinition = LUCIDE_ICONS[iconName];
+      if (!iconDefinition) {
+        return;
+      }
+
+      const svg = createElement(iconDefinition, {
         width: '14',
         height: '14',
         'stroke-width': '1.8'
-      }
+      });
+
+      placeholder.replaceWith(svg);
     });
   }
 }
