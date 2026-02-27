@@ -23,6 +23,7 @@ export type ExtensionToWebviewMessage =
 export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
   | ProtocolEnvelope<'newCopilotSession', Record<string, never>>
+  | ProtocolEnvelope<'openExternal', { url: string }>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
   | ProtocolEnvelope<'submitComposerInput', { content: string; attachments: AttachmentInfo[] }>
   | ProtocolEnvelope<'saveImage', { data: string; mimeType: string }>

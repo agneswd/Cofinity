@@ -1,4 +1,5 @@
 import { escapeHtml, formatDuration, formatStatusLabel, formatTime, messageStateLabel } from './sessionManagerFormat';
+import { renderMarkdown } from './sessionManagerMarkdown';
 import type { AttachmentInfo, GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 
 function renderChatMessages(messages: SessionChatMessage[]): string {
@@ -27,7 +28,7 @@ function renderChatMessages(messages: SessionChatMessage[]): string {
 
       return `
         <article class="chat-message role-${message.role}">
-          <div class="chat-message-body">${escapeHtml(message.content)}</div>
+          <div class="chat-message-body markdown-content">${renderMarkdown(message.content)}</div>
           ${renderAttachmentChips(message.attachments)}
           <div class="chat-message-meta">
             <span>${escapeHtml(stateLabel)}</span>

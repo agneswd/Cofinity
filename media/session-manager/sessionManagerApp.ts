@@ -354,6 +354,22 @@ export class SessionManagerApp {
       }
     });
 
+    this.sessionDetailElement?.querySelectorAll<HTMLAnchorElement>('.markdown-link').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const url = link.getAttribute('href');
+        if (!url) {
+          return;
+        }
+
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'openExternal',
+          payload: { url }
+        });
+      });
+    });
+
     const closeAutopilotPromptModal = () => {
       autopilotPromptModalBackdrop?.classList.add('is-hidden');
       if (newPromptTextarea) {

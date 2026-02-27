@@ -88,6 +88,9 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       case 'newCopilotSession':
         void this.openNewCopilotSession();
         return;
+      case 'openExternal':
+        void vscode.env.openExternal(vscode.Uri.parse(message.payload.url));
+        return;
       case 'selectSession':
         this.sessionRegistry.selectSession(message.payload.sessionId);
         return;
