@@ -909,7 +909,7 @@ body {
 
 .composer-card {
   border: 1px solid var(--vscode-panel-border);
-  background: var(--vscode-input-background);
+  background: #181818;
 }
 
 .composer-card:focus-within {
