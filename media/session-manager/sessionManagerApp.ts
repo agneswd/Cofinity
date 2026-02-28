@@ -64,7 +64,7 @@ export class SessionManagerApp {
   private sidebarCollapsed = false;
   private draggedQueuedPromptId: string | null = null;
   private draggedAutopilotPromptIndex: number | null = null;
-  private shouldRefocusComposer = false;
+  private composerRefocusAttemptsRemaining = 0;
   private readonly draftComposerBySession = new Map<string, string>();
   private readonly draftAttachmentsBySession = new Map<string, AttachmentInfo[]>();
   private readonly toolCallsBySession = new Map<string, number>();
@@ -128,7 +128,7 @@ export class SessionManagerApp {
 
         const existing = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
         this.draftAttachmentsBySession.set(this.session.sessionId, [...existing, message.payload.attachment]);
-        this.shouldRefocusComposer = true;
+        this.requestComposerRefocus();
         this.renderSession();
         return;
       }
@@ -275,10 +275,10 @@ export class SessionManagerApp {
     this.bindSessionEvents();
     this.refreshIcons();
 
-    if (this.shouldRefocusComposer) {
+    if (this.composerRefocusAttemptsRemaining > 0) {
       const composerTextarea = document.getElementById('composer-textarea') as HTMLTextAreaElement | null;
       composerTextarea?.focus();
-      this.shouldRefocusComposer = false;
+      this.composerRefocusAttemptsRemaining -= 1;
     }
   }
 
@@ -409,7 +409,7 @@ export class SessionManagerApp {
           attachments: currentDraftAttachments
         }
       });
-      this.shouldRefocusComposer = true;
+      this.requestComposerRefocus();
       if (this.session) {
         this.draftComposerBySession.set(this.session.sessionId, '');
         this.draftAttachmentsBySession.set(this.session.sessionId, []);
@@ -518,7 +518,7 @@ export class SessionManagerApp {
             isTemporary: button.dataset.attachmentTemporary === 'true'
           }
         });
-        this.shouldRefocusComposer = true;
+        this.requestComposerRefocus();
         this.renderSession();
       });
     });
@@ -881,5 +881,9 @@ export class SessionManagerApp {
 
       placeholder.replaceWith(svg);
     });
+  }
+
+  private requestComposerRefocus(): void {
+    this.composerRefocusAttemptsRemaining = Math.max(this.composerRefocusAttemptsRemaining, 3);
   }
 }

@@ -285,25 +285,27 @@ export function renderSessionDetail(
       ${renderQueuedPrompts(session)}
       <footer class="composer-shell">
         ${hint ? `<div class="composer-hint">${escapeHtml(hint)}</div>` : ''}
-        ${renderAttachmentChips(draftAttachments, true)}
-        <div class="composer-row">
-          <textarea id="composer-textarea" class="composer-textarea" placeholder="${escapeHtml(composerPlaceholder)}"></textarea>
-        </div>
-        <div class="composer-footer-row">
-          <div class="composer-footer-left">
-            <label class="autopilot-toggle">
-              <input id="autopilot-bar-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
-              <span class="autopilot-toggle-track"></span>
-              <span class="autopilot-toggle-thumb"></span>
-            </label>
-            <span class="autopilot-bar-label">Autopilot</span>
+        <div class="composer-card">
+          ${renderAttachmentChips(draftAttachments, true)}
+          <div class="composer-row">
+            <textarea id="composer-textarea" class="composer-textarea" placeholder="${escapeHtml(composerPlaceholder)}"></textarea>
           </div>
-          <div class="composer-footer-actions">
-            <input id="composer-image-input" class="is-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple />
-            <button id="attach-image-button" class="composer-footer-button" title="Attach image" aria-label="Attach image"><i data-lucide="image-plus" aria-hidden="true"></i></button>
-            <button id="send-button" class="composer-footer-button composer-send-button" title="Send" aria-label="Send">
-              <i data-lucide="send" aria-hidden="true"></i>
-            </button>
+          <div class="composer-footer-row">
+            <div class="composer-footer-left">
+              <label class="autopilot-toggle">
+                <input id="autopilot-bar-checkbox" type="checkbox" ${session.autopilotMode === 'drainQueue' ? 'checked' : ''} />
+                <span class="autopilot-toggle-track"></span>
+                <span class="autopilot-toggle-thumb"></span>
+              </label>
+              <span class="autopilot-bar-label">Autopilot</span>
+            </div>
+            <div class="composer-footer-actions">
+              <input id="composer-image-input" class="is-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple />
+              <button id="attach-image-button" class="composer-footer-button" title="Attach image" aria-label="Attach image"><i data-lucide="image-plus" aria-hidden="true"></i></button>
+              <button id="send-button" class="composer-footer-button composer-send-button" title="Send" aria-label="Send">
+                <i data-lucide="send" aria-hidden="true"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
