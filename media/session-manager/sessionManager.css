@@ -394,6 +394,7 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: #181818;
 }
 
 .chat-shell {
@@ -401,6 +402,7 @@ body {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  background: #181818;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -909,7 +911,7 @@ body {
 
 .composer-card {
   border: 1px solid var(--vscode-panel-border);
-  background: #181818;
+  background: #313131;
 }
 
 .composer-card:focus-within {
