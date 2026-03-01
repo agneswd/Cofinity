@@ -393,26 +393,27 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
   }
 
   private async openNewCopilotSession(): Promise<void> {
+    const commands = await vscode.commands.getCommands(true);
+
     for (const commandId of CHAT_NEW_COMMAND_CANDIDATES) {
+      if (!commands.includes(commandId)) {
+        continue;
+      }
+
       try {
         await vscode.commands.executeCommand(commandId);
-        return;
       } catch {
         // Try the next candidate.
       }
     }
 
     for (const commandId of CHAT_OPEN_COMMAND_CANDIDATES) {
+      if (!commands.includes(commandId)) {
+        continue;
+      }
+
       try {
-        if (commandId === 'workbench.action.chat.open') {
-          await vscode.commands.executeCommand(commandId, {
-            mode: 'agent',
-            query: '#new ',
-            isPartialQuery: true
-          });
-        } else {
-          await vscode.commands.executeCommand(commandId);
-        }
+        await vscode.commands.executeCommand(commandId);
         return;
       } catch {
         // Try the next candidate.
