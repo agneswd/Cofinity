@@ -91,6 +91,9 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       case 'openExternal':
         void vscode.env.openExternal(vscode.Uri.parse(message.payload.url));
         return;
+      case 'addAttachment':
+        void this.addWorkspaceAttachments();
+        return;
       case 'selectSession':
         this.sessionRegistry.selectSession(message.payload.sessionId);
         return;
@@ -309,6 +312,69 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
         }
       }
     });
+  }
+
+  private async addWorkspaceAttachments(): Promise<void> {
+    const files = await vscode.workspace.findFiles('**/*', '**/{node_modules,.git,dist}/**', 2000);
+    if (files.length === 0) {
+      this.postError('No workspace files available to attach.');
+      return;
+    }
+
+    const items = files
+      .map((uri) => {
+        const relativePath = vscode.workspace.asRelativePath(uri);
+        return {
+          label: path.basename(uri.fsPath),
+          description: relativePath,
+          uri
+        };
+      })
+      .sort((left, right) => left.description.localeCompare(right.description));
+
+    const selected = await vscode.window.showQuickPick(items, {
+      canPickMany: true,
+      placeHolder: 'Select workspace files to attach',
+      matchOnDescription: true
+    });
+
+    if (!selected || selected.length === 0) {
+      return;
+    }
+
+    this.postMessage({
+      protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
+      type: 'attachmentsAdded',
+      payload: {
+        attachments: selected.map((item) => ({
+          id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          name: item.description,
+          uri: item.uri.toString(),
+          mimeType: this.getMimeTypeForPath(item.uri.fsPath)
+        }))
+      }
+    });
+  }
+
+  private getMimeTypeForPath(filePath: string): string {
+    const extension = path.extname(filePath).toLowerCase();
+    const mimeTypes = new Map<string, string>([
+      ['.png', 'image/png'],
+      ['.jpg', 'image/jpeg'],
+      ['.jpeg', 'image/jpeg'],
+      ['.gif', 'image/gif'],
+      ['.webp', 'image/webp'],
+      ['.bmp', 'image/bmp'],
+      ['.svg', 'image/svg+xml'],
+      ['.md', 'text/markdown'],
+      ['.txt', 'text/plain'],
+      ['.ts', 'text/plain'],
+      ['.tsx', 'text/plain'],
+      ['.js', 'text/plain'],
+      ['.json', 'application/json']
+    ]);
+
+    return mimeTypes.get(extension) ?? 'application/octet-stream';
   }
 
   private removeDraftAttachment(attachment: { attachmentId: string; uri?: string; isTemporary?: boolean }): void {

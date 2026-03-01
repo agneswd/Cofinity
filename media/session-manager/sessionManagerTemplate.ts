@@ -50,9 +50,11 @@ function renderAttachmentChips(attachments?: AttachmentInfo[], removable = false
     <div class="attachment-chips">
       ${attachments
         .map(
-          (attachment) => `
+          (attachment) => {
+            const icon = attachment.mimeType.startsWith('image/') ? 'image' : 'file';
+            return `
             <div class="attachment-chip" title="${escapeHtml(attachment.name)}">
-              <span class="attachment-chip-icon" aria-hidden="true"><i data-lucide="image"></i></span>
+              <span class="attachment-chip-icon" aria-hidden="true"><i data-lucide="${icon}"></i></span>
               <span class="attachment-chip-text">${escapeHtml(attachment.name)}</span>
               ${
                 removable
@@ -60,7 +62,8 @@ function renderAttachmentChips(attachments?: AttachmentInfo[], removable = false
                   : ''
               }
             </div>
-          `
+          `;
+          }
         )
         .join('')}
     </div>
@@ -90,7 +93,7 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
               <div class="queue-stack-item" data-item-id="${item.itemId}" draggable="true">
                 <div class="queue-stack-item-body">
                   <div class="queue-stack-item-text">${escapeHtml(item.content)}</div>
-                  ${item.attachments?.length ? `<div class="queue-item-attachment-badge" title="${item.attachments.length} image attachment${item.attachments.length === 1 ? '' : 's'}">${item.attachments.length} image${item.attachments.length === 1 ? '' : 's'}</div>` : ''}
+                  ${item.attachments?.length ? `<div class="queue-item-attachment-badge" title="${item.attachments.length} attachment${item.attachments.length === 1 ? '' : 's'}">${item.attachments.length} attachment${item.attachments.length === 1 ? '' : 's'}</div>` : ''}
                   <textarea class="queue-inline-editor is-hidden" data-item-id="${item.itemId}" rows="2">${escapeHtml(item.content)}</textarea>
                 </div>
                 <div class="queue-stack-item-actions">
@@ -301,6 +304,7 @@ export function renderSessionDetail(
             </div>
             <div class="composer-footer-actions">
               <input id="composer-image-input" class="is-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple />
+              <button id="attach-file-button" class="composer-footer-button" title="Attach workspace file" aria-label="Attach workspace file"><i data-lucide="file" aria-hidden="true"></i></button>
               <button id="attach-image-button" class="composer-footer-button" title="Attach image" aria-label="Attach image"><i data-lucide="image-plus" aria-hidden="true"></i></button>
               <button id="send-button" class="composer-footer-button composer-send-button" title="Send" aria-label="Send">
                 <i data-lucide="send" aria-hidden="true"></i>

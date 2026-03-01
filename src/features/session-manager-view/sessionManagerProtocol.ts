@@ -16,6 +16,7 @@ export type ExtensionToWebviewMessage =
   | ProtocolEnvelope<'sessionsSnapshot', SessionManagerSnapshot>
   | ProtocolEnvelope<'sessionSnapshot', { session: SessionSnapshot | null }>
   | ProtocolEnvelope<'globalSettings', GlobalSettings>
+  | ProtocolEnvelope<'attachmentsAdded', { attachments: AttachmentInfo[] }>
   | ProtocolEnvelope<'imageSaved', { attachment: AttachmentInfo }>
   | ProtocolEnvelope<'error', { message: string }>
   | ProtocolEnvelope<'openSettings', Record<string, never>>;
@@ -24,6 +25,7 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
   | ProtocolEnvelope<'newCopilotSession', Record<string, never>>
   | ProtocolEnvelope<'openExternal', { url: string }>
+  | ProtocolEnvelope<'addAttachment', Record<string, never>>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>
   | ProtocolEnvelope<'submitComposerInput', { content: string; attachments: AttachmentInfo[] }>
   | ProtocolEnvelope<'saveImage', { data: string; mimeType: string }>

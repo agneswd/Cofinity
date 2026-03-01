@@ -1,6 +1,7 @@
 import {
   ChevronLeft,
   createElement,
+  FileText,
   Image,
   ImagePlus,
   Pencil,
@@ -31,6 +32,7 @@ const LUCIDE_ICONS = {
   plus: Plus,
   pencil: Pencil,
   'trash-2': Trash2,
+  file: FileText,
   image: Image,
   'image-plus': ImagePlus,
   send: Send
@@ -121,6 +123,17 @@ export class SessionManagerApp {
         this.globalSettings = message.payload;
         this.renderSession();
         return;
+      case 'attachmentsAdded': {
+        if (!this.session) {
+          return;
+        }
+
+        const existing = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
+        this.draftAttachmentsBySession.set(this.session.sessionId, [...existing, ...message.payload.attachments]);
+        this.requestComposerRefocus();
+        this.renderSession();
+        return;
+      }
       case 'imageSaved': {
         if (!this.session) {
           return;
@@ -291,6 +304,7 @@ export class SessionManagerApp {
     const modalClose = document.getElementById('settings-modal-close') as HTMLButtonElement | null;
     const composerTextarea = document.getElementById('composer-textarea') as HTMLTextAreaElement | null;
     const composerImageInput = document.getElementById('composer-image-input') as HTMLInputElement | null;
+    const attachFileButton = document.getElementById('attach-file-button') as HTMLButtonElement | null;
     const attachImageButton = document.getElementById('attach-image-button') as HTMLButtonElement | null;
     const sendButton = document.getElementById('send-button') as HTMLButtonElement | null;
     const autopilotCheckbox = document.getElementById('autopilot-checkbox') as HTMLInputElement | null;
@@ -487,6 +501,14 @@ export class SessionManagerApp {
 
     attachImageButton?.addEventListener('click', () => {
       composerImageInput?.click();
+    });
+
+    attachFileButton?.addEventListener('click', () => {
+      this.vscode.postMessage({
+        protocolVersion: 1,
+        type: 'addAttachment',
+        payload: {}
+      });
     });
 
     composerImageInput?.addEventListener('change', () => {

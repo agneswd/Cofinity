@@ -85,6 +85,7 @@ export type ExtensionMessage =
   | { type: 'sessionsSnapshot'; payload: SessionsSnapshotPayload }
   | { type: 'sessionSnapshot'; payload: SessionSnapshotPayload }
   | { type: 'globalSettings'; payload: GlobalSettings }
+  | { type: 'attachmentsAdded'; payload: { attachments: AttachmentInfo[] } }
   | { type: 'imageSaved'; payload: { attachment: AttachmentInfo } }
   | { type: 'error'; payload: { message: string } }
   | { type: 'openSettings'; payload: Record<string, never> };
