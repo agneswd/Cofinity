@@ -1069,6 +1069,7 @@ body::-webkit-scrollbar-corner,
 
 .composer-footer-button i,
 .panel-heading-action i,
+.settings-section-add i,
 .attachment-chip-icon i,
 .queue-delete-button i,
 .sidebar-toggle-icon i {
@@ -1234,6 +1235,30 @@ body::-webkit-scrollbar-corner,
   color: var(--vscode-descriptionForeground);
   padding: 2px 0 5px;
 }
+.settings-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.settings-section-add {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vscode-panel-border);
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  padding: 0;
+}
+
+.settings-section-add:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+  color: var(--vscode-foreground);
+}
 
 .autopilot-prompts-list {
   display: flex;
@@ -1295,12 +1320,6 @@ body::-webkit-scrollbar-corner,
 .autopilot-prompt-delete:hover {
   opacity: 1;
   color: var(--vscode-inputValidation-errorBorder, #f48771);
-}
-
-.autopilot-prompt-add-row {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 4px;
 }
 
 .autopilot-prompt-textarea {

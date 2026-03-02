@@ -241,7 +241,10 @@ export function renderSessionDetail(
               </label>
             </label>
             <div class="settings-section-divider"></div>
-            <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot reply prompts</div>
+            <div class="settings-section-heading">
+              <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot reply prompts</div>
+              <button id="autopilot-prompt-add" class="settings-section-add" title="Add a new autopilot prompt" aria-label="Add a new autopilot prompt"><i data-lucide="plus" aria-hidden="true"></i></button>
+            </div>
             <div id="autopilot-prompts-list" class="autopilot-prompts-list">
               ${globalSettings.autopilotPrompts.map((prompt, idx) => `
                 <div class="autopilot-prompt-item" data-prompt-index="${idx}" draggable="true" title="Drag to reorder this autopilot prompt.">
@@ -250,9 +253,6 @@ export function renderSessionDetail(
                   <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt" title="Delete this autopilot prompt">&times;</button>
                 </div>
               `).join('')}
-            </div>
-            <div class="autopilot-prompt-add-row">
-              <button id="autopilot-prompt-add" class="secondary-button" title="Add a new autopilot prompt">Add prompt</button>
             </div>
             <div class="settings-section-label" style="margin-top:8px" title="Random delay window before autopilot sends a reply.">Autopilot reply delay</div>
             <div class="setting-row" title="Shortest delay before autopilot sends its next response.">
