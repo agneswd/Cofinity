@@ -15,6 +15,62 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+body,
+.session-list,
+.chat-transcript,
+.queue-stack-list,
+.settings-modal,
+.autopilot-prompts-list {
+  scrollbar-width: thin;
+  scrollbar-color: #505050 #181818;
+}
+
+body::-webkit-scrollbar,
+.session-list::-webkit-scrollbar,
+.chat-transcript::-webkit-scrollbar,
+.queue-stack-list::-webkit-scrollbar,
+.settings-modal::-webkit-scrollbar,
+.autopilot-prompts-list::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body::-webkit-scrollbar-track,
+.session-list::-webkit-scrollbar-track,
+.chat-transcript::-webkit-scrollbar-track,
+.queue-stack-list::-webkit-scrollbar-track,
+.settings-modal::-webkit-scrollbar-track,
+.autopilot-prompts-list::-webkit-scrollbar-track {
+  background: #181818;
+}
+
+body::-webkit-scrollbar-thumb,
+.session-list::-webkit-scrollbar-thumb,
+.chat-transcript::-webkit-scrollbar-thumb,
+.queue-stack-list::-webkit-scrollbar-thumb,
+.settings-modal::-webkit-scrollbar-thumb,
+.autopilot-prompts-list::-webkit-scrollbar-thumb {
+  background: #505050;
+  border: 2px solid #181818;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+.session-list::-webkit-scrollbar-thumb:hover,
+.chat-transcript::-webkit-scrollbar-thumb:hover,
+.queue-stack-list::-webkit-scrollbar-thumb:hover,
+.settings-modal::-webkit-scrollbar-thumb:hover,
+.autopilot-prompts-list::-webkit-scrollbar-thumb:hover {
+  background: #6a6a6a;
+}
+
+body::-webkit-scrollbar-corner,
+.session-list::-webkit-scrollbar-corner,
+.chat-transcript::-webkit-scrollbar-corner,
+.queue-stack-list::-webkit-scrollbar-corner,
+.settings-modal::-webkit-scrollbar-corner,
+.autopilot-prompts-list::-webkit-scrollbar-corner {
+  background: #181818;
+}
 
 /* ── Layout ─────────────────────────────────────────────── */
 
