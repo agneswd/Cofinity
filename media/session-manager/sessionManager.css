@@ -579,6 +579,39 @@ body::-webkit-scrollbar-corner,
   max-width: 72%;
   padding: 5px 9px;
   font-size: 13px;
+.working-indicator {
+  padding: 12px 10px 8px;
+  font-size: 13px;
+  color: var(--vscode-descriptionForeground);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.working-indicator::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--vscode-progressBar-background, #0078d4);
+  animation: working-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes working-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
   line-height: 1.5;
   background: color-mix(in srgb, var(--vscode-button-background) 20%, var(--vscode-editorWidget-background));
   border: 1px solid var(--vscode-panel-border);

@@ -113,6 +113,14 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
   `;
 }
 
+function renderWorkingIndicator(session: SessionSnapshot): string {
+  if (session.status !== 'running' || session.pendingRequest) {
+    return '';
+  }
+
+  return '<div class="working-indicator">Working...</div>';
+}
+
 export function renderSessionsList(sessions: SessionListItem[], selectedSessionId: string | null): string {
   if (sessions.length === 0) {
     return '<div class="empty-state">No active sessions.</div>';
