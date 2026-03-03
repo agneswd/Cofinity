@@ -157,8 +157,7 @@ export class SessionController implements vscode.Disposable {
 
     const nextQueue = [...this.sessionState.promptQueue];
     const [item] = nextQueue.splice(sourceIndex, 1);
-    const normalizedTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
-    nextQueue.splice(normalizedTargetIndex, 0, item);
+    nextQueue.splice(targetIndex, 0, item);
     this.sessionState.promptQueue = nextQueue;
     this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
     this.pushHistory('queueItemAdded', 'Reordered queued prompts.');

@@ -735,9 +735,7 @@ export class SessionManagerApp {
 
         const nextPrompts = [...this.globalSettings.autopilotPrompts];
         const [movedPrompt] = nextPrompts.splice(this.draggedAutopilotPromptIndex, 1);
-        const normalizedTargetIndex =
-          this.draggedAutopilotPromptIndex < targetIndex ? targetIndex - 1 : targetIndex;
-        nextPrompts.splice(normalizedTargetIndex, 0, movedPrompt);
+        nextPrompts.splice(targetIndex, 0, movedPrompt);
 
         this.vscode.postMessage({
           protocolVersion: 1,
