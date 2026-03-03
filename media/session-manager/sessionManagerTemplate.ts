@@ -31,9 +31,9 @@ function renderChatMessages(messages: SessionChatMessage[]): string {
           <div class="chat-message-body markdown-content">${renderMarkdown(message.content)}</div>
           ${renderAttachmentChips(message.attachments)}
           <div class="chat-message-meta">
+            <span>${formatTime(message.createdAtMs)}</span>
             <span>${escapeHtml(stateLabel)}</span>
             ${durationLabel ? `<span class="chat-message-duration" title="Agent response time">${escapeHtml(durationLabel)}</span>` : ''}
-            <span>${formatTime(message.createdAtMs)}</span>
           </div>
         </article>
       `;
