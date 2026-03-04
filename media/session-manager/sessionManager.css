@@ -550,10 +550,11 @@ body::-webkit-scrollbar-corner,
 .chat-message {
   display: flex;
   flex-direction: column;
-  padding: 2px 10px;
+  padding: 2px 0;
 }
 
 .chat-message.role-user {
+  padding: 2px 10px;
   align-items: flex-end;
 }
 
@@ -566,7 +567,7 @@ body::-webkit-scrollbar-corner,
 .chat-message.role-assistant .chat-message-body,
 .chat-message.role-system .chat-message-body {
   padding: 3px 0;
-  font-size: 13px;
+  padding: 3px 10px;
   line-height: 1.55;
   background: transparent;
   border: none;
@@ -585,6 +586,7 @@ body::-webkit-scrollbar-corner,
   color: var(--vscode-descriptionForeground);
   line-height: 1.4;
   display: flex;
+  padding: 0 10px;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
@@ -1004,7 +1006,6 @@ body::-webkit-scrollbar-corner,
 }
 
 .composer-card {
-  margin: 0 10px;
   border: 1px solid var(--vscode-panel-border);
   background: #313131;
 }
