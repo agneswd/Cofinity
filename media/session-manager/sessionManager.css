@@ -11,7 +11,7 @@ body {
   font-family: var(--vscode-font-family);
   font-size: var(--vscode-font-size);
   color: var(--vscode-foreground);
-  background: var(--vscode-editor-background);
+  background: #181818;
   height: 100vh;
   overflow: hidden;
 }
@@ -78,6 +78,7 @@ body::-webkit-scrollbar-corner,
   display: grid;
   grid-template-columns: minmax(0, 1fr) 240px;
   height: 100vh;
+  background: #181818;
   transition: grid-template-columns 0.12s ease;
 }
 
