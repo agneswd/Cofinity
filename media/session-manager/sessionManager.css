@@ -475,7 +475,7 @@ body::-webkit-scrollbar-corner,
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 7px 10px;
+  padding: 7px 0;
   border-bottom: 1px solid var(--vscode-panel-border);
 }
 
@@ -555,7 +555,6 @@ body::-webkit-scrollbar-corner,
 }
 
 .chat-message.role-user {
-  padding: 2px 10px;
   align-items: flex-end;
 }
 
@@ -568,7 +567,7 @@ body::-webkit-scrollbar-corner,
 .chat-message.role-assistant .chat-message-body,
 .chat-message.role-system .chat-message-body {
   padding: 3px 0;
-  padding: 3px 10px;
+  font-size: 13px;
   line-height: 1.55;
   background: transparent;
   border: none;
@@ -581,13 +580,19 @@ body::-webkit-scrollbar-corner,
   max-width: 72%;
   padding: 5px 9px;
   font-size: 13px;
+  line-height: 1.5;
+  background: color-mix(in srgb, var(--vscode-button-background) 20%, var(--vscode-editorWidget-background));
+  border: 1px solid var(--vscode-panel-border);
+  color: var(--vscode-foreground);
+  overflow-wrap: anywhere;
+}
+
 .working-indicator {
-  padding: 12px 10px 8px;
+  padding: 12px 0 8px;
   font-size: 13px;
   color: var(--vscode-descriptionForeground);
   line-height: 1.4;
   display: flex;
-  padding: 0 10px;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
@@ -614,12 +619,6 @@ body::-webkit-scrollbar-corner,
     opacity: 1;
     transform: scale(1);
   }
-}
-  line-height: 1.5;
-  background: color-mix(in srgb, var(--vscode-button-background) 20%, var(--vscode-editorWidget-background));
-  border: 1px solid var(--vscode-panel-border);
-  color: var(--vscode-foreground);
-  overflow-wrap: anywhere;
 }
 
 .markdown-content h1,
@@ -1017,7 +1016,7 @@ body::-webkit-scrollbar-corner,
 }
 
 .composer-hint {
-  padding: 4px 10px 2px;
+  padding: 4px 0 2px;
   font-size: 10px;
   color: var(--vscode-descriptionForeground);
   letter-spacing: 0.02em;
