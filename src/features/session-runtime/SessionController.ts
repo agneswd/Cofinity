@@ -228,6 +228,9 @@ export class SessionController implements vscode.Disposable {
       response: response.trim(),
       attachments: attachments.map((attachment) => ({ ...attachment }))
     });
+    this.sessionState.pendingRequest = null;
+    this.touch('running');
+    this.onDidChangeStateEmitter.fire();
     return true;
   }
 
