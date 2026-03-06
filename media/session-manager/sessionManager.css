@@ -1003,7 +1003,6 @@ body::-webkit-scrollbar-corner,
 
 .composer-shell {
   flex-shrink: 0;
-  border-top: 1px solid var(--vscode-panel-border);
   padding: 0 0 10px;
   background: #181818;
 }
