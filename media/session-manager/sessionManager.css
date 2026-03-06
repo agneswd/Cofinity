@@ -1005,7 +1005,7 @@ body::-webkit-scrollbar-corner,
   flex-shrink: 0;
   border-top: 1px solid var(--vscode-panel-border);
   padding: 0 0 10px;
-  background: color-mix(in srgb, var(--vscode-editorWidget-background) 70%, transparent);
+  background: #181818;
 }
 
 .composer-card {
