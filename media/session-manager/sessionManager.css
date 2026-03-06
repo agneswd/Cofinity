@@ -476,7 +476,7 @@ body::-webkit-scrollbar-corner,
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 7px 10px;
+  padding: 7px 16px;
   border-bottom: 1px solid var(--vscode-panel-border);
 }
 
@@ -556,7 +556,7 @@ body::-webkit-scrollbar-corner,
 }
 
 .chat-message.role-user {
-  padding: 2px 10px;
+  padding: 2px 16px;
   align-items: flex-end;
 }
 
@@ -568,7 +568,7 @@ body::-webkit-scrollbar-corner,
 /* Agent: bare text, full width */
 .chat-message.role-assistant .chat-message-body,
 .chat-message.role-system .chat-message-body {
-  padding: 3px 10px;
+  padding: 3px 16px;
   font-size: 13px;
   line-height: 1.55;
   background: transparent;
@@ -590,7 +590,7 @@ body::-webkit-scrollbar-corner,
 }
 
 .working-indicator {
-  padding: 12px 10px 8px;
+  padding: 12px 16px 8px;
   font-size: 13px;
   color: var(--vscode-descriptionForeground);
   line-height: 1.4;
@@ -730,7 +730,7 @@ body::-webkit-scrollbar-corner,
   color: var(--vscode-descriptionForeground);
   display: flex;
   gap: 6px;
-  padding: 0 10px;
+  padding: 0 16px;
 }
 
 .chat-message-duration {
