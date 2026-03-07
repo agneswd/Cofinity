@@ -27,6 +27,11 @@ declare function acquireVsCodeApi(): {
 
 type WebviewApi = ReturnType<typeof acquireVsCodeApi>;
 
+interface ProcessingIndicatorState {
+  baselineMessageCount: number;
+  startedAtMs: number;
+}
+
 const LUCIDE_ICONS = {
   'chevron-left': ChevronLeft,
   plus: Plus,
@@ -70,6 +75,8 @@ export class SessionManagerApp {
   private readonly draftComposerBySession = new Map<string, string>();
   private readonly draftAttachmentsBySession = new Map<string, AttachmentInfo[]>();
   private readonly toolCallsBySession = new Map<string, number>();
+  private readonly processingResponseBySession = new Map<string, ProcessingIndicatorState>();
+  private readonly processingResponseTimeouts = new Map<string, number>();
 
   constructor() {
     this.vscode = acquireVsCodeApi();
@@ -115,6 +122,8 @@ export class SessionManagerApp {
         this.handleSessionsSnapshot(message.payload.selectedSessionId, message.payload.sessions);
         return;
       case 'sessionSnapshot':
+        this.reconcileComposerFocus(message.payload.session);
+        this.syncProcessingIndicator(message.payload.session);
         this.session = message.payload.session;
         this.renderSession();
         this.scrollTranscriptToBottom();
@@ -282,7 +291,8 @@ export class SessionManagerApp {
       this.session,
       this.settingsOpen,
       this.globalSettings,
-      this.draftAttachmentsBySession.get(this.session.sessionId) ?? []
+      this.draftAttachmentsBySession.get(this.session.sessionId) ?? [],
+      this.shouldShowProcessingIndicator(this.session)
     );
 
     this.bindSessionEvents();
@@ -423,6 +433,11 @@ export class SessionManagerApp {
           attachments: currentDraftAttachments
         }
       });
+
+      if (this.session?.pendingRequest) {
+        this.beginProcessingIndicator(this.session.sessionId);
+      }
+
       this.requestComposerRefocus();
       if (this.session) {
         this.draftComposerBySession.set(this.session.sessionId, '');
@@ -432,6 +447,7 @@ export class SessionManagerApp {
       updateSendButtonState();
       // Collapse back to min-height after send and keep focus
       composerTextarea.style.height = 'auto';
+      this.renderSession();
       composerTextarea.focus();
     });
 
@@ -864,6 +880,84 @@ export class SessionManagerApp {
     errorBlock.className = 'inline-error';
     errorBlock.textContent = message;
     this.sessionDetailElement.prepend(errorBlock);
+  }
+
+  private reconcileComposerFocus(nextSession: SessionSnapshot | null): void {
+    const activeElement = document.activeElement as HTMLElement | null;
+    const composerWasFocused = activeElement?.id === 'composer-textarea';
+
+    if (composerWasFocused || this.shouldAutoFocusComposer(nextSession)) {
+      this.requestComposerRefocus();
+    }
+  }
+
+  private shouldAutoFocusComposer(nextSession: SessionSnapshot | null): boolean {
+    if (!nextSession?.pendingRequest) {
+      return false;
+    }
+
+    if (!this.session || this.session.sessionId !== nextSession.sessionId) {
+      return true;
+    }
+
+    const previousPendingRequestId = this.session.pendingRequest?.requestId;
+    return previousPendingRequestId !== nextSession.pendingRequest.requestId;
+  }
+
+  private shouldShowProcessingIndicator(session: SessionSnapshot): boolean {
+    return this.processingResponseBySession.has(session.sessionId);
+  }
+
+  private beginProcessingIndicator(sessionId: string): void {
+    const existingTimeout = this.processingResponseTimeouts.get(sessionId);
+    if (existingTimeout !== undefined) {
+      window.clearTimeout(existingTimeout);
+    }
+
+    this.processingResponseBySession.set(sessionId, {
+      baselineMessageCount: this.session?.chatMessages.length ?? 0,
+      startedAtMs: Date.now()
+    });
+    const timeoutHandle = window.setTimeout(() => {
+      this.clearProcessingIndicator(sessionId);
+      if (this.session?.sessionId === sessionId) {
+        this.renderSession();
+      }
+    }, 15000);
+
+    this.processingResponseTimeouts.set(sessionId, timeoutHandle);
+  }
+
+  private clearProcessingIndicator(sessionId: string): void {
+    this.processingResponseBySession.delete(sessionId);
+    const existingTimeout = this.processingResponseTimeouts.get(sessionId);
+    if (existingTimeout !== undefined) {
+      window.clearTimeout(existingTimeout);
+      this.processingResponseTimeouts.delete(sessionId);
+    }
+  }
+
+  private syncProcessingIndicator(session: SessionSnapshot | null): void {
+    if (!session) {
+      return;
+    }
+
+    const state = this.processingResponseBySession.get(session.sessionId);
+    if (!state) {
+      return;
+    }
+
+    const lastMessageRole = session.chatMessages.at(-1)?.role;
+    const hasNewMessages = session.chatMessages.length > state.baselineMessageCount;
+
+    if (session.pendingRequest || session.status === 'interrupted') {
+      this.clearProcessingIndicator(session.sessionId);
+      return;
+    }
+
+    if (hasNewMessages && (lastMessageRole === 'assistant' || lastMessageRole === 'system')) {
+      this.clearProcessingIndicator(session.sessionId);
+    }
   }
 
   private scrollTranscriptToBottom(): void {

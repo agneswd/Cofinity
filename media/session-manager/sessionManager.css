@@ -1260,12 +1260,6 @@ body::-webkit-scrollbar-corner,
 
 /* ── Autopilot prompts editor ───────────────────────────── */
 
-.settings-section-divider {
-  height: 1px;
-  background: var(--vscode-panel-border);
-  margin: 8px 0 6px;
-}
-
 .settings-section-label {
   font-size: 10px;
   letter-spacing: 0.06em;

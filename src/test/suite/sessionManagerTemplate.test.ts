@@ -1,0 +1,92 @@
+import assert from 'node:assert/strict';
+import { renderSessionDetail } from '../../../media/session-manager/sessionManagerTemplate';
+import type { GlobalSettings, SessionSnapshot } from '../../../media/session-manager/sessionManagerModels';
+
+function createGlobalSettings(): GlobalSettings {
+  return {
+    notificationSoundEnabled: true,
+    autoRevealEnabled: true,
+    autoQueuePrompts: true,
+    enterSends: true,
+    autopilotPrompts: [],
+    autopilotDelayMinMs: 2000,
+    autopilotDelayMaxMs: 5000
+  };
+}
+
+function createSessionSnapshot(overrides: Partial<SessionSnapshot> = {}): SessionSnapshot {
+  return {
+    sessionId: 'session_1',
+    title: 'Test session',
+    status: 'active',
+    queuedCount: 0,
+    queuedPrompts: [],
+    chatMessages: [],
+    pendingRequest: null,
+    autopilotMode: 'off',
+    autopilotTurnsUsed: 0,
+    autopilotMaxTurns: 20,
+    history: [],
+    stats: {
+      toolCalls: 1,
+      userResponses: 0,
+      cancellations: 0
+    },
+    lastActiveAtMs: Date.now(),
+    ...overrides
+  };
+}
+
+suite('sessionManagerTemplate', () => {
+  test('renders a working indicator while the session is running', () => {
+    const html = renderSessionDetail(
+      createSessionSnapshot({ status: 'running' }),
+      false,
+      createGlobalSettings(),
+      []
+    );
+
+    assert.match(html, /class="working-indicator"/);
+    assert.match(html, /Working\.\.\./);
+  });
+
+  test('renders a processing indicator after the user has replied', () => {
+    const html = renderSessionDetail(
+      createSessionSnapshot({
+        status: 'waitingForUser',
+        pendingRequest: {
+          requestId: 'request_1',
+          prompt: 'Need input',
+          kind: 'question',
+          createdAtMs: Date.now()
+        }
+      }),
+      false,
+      createGlobalSettings(),
+      [],
+      true
+    );
+
+    assert.match(html, /class="working-indicator"/);
+    assert.match(html, /Processing your response/);
+  });
+
+  test('does not render a working indicator when the session is waiting for input', () => {
+    const html = renderSessionDetail(
+      createSessionSnapshot({
+        status: 'waitingForUser',
+        pendingRequest: {
+          requestId: 'request_1',
+          prompt: 'Need input',
+          kind: 'question',
+          createdAtMs: Date.now()
+        }
+      }),
+      false,
+      createGlobalSettings(),
+      []
+    );
+
+    assert.doesNotMatch(html, /class="working-indicator"/);
+  });
+});

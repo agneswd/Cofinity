@@ -113,8 +113,16 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
   `;
 }
 
-function renderWorkingIndicator(session: SessionSnapshot): string {
-  if (session.status !== 'running' || session.pendingRequest) {
+function renderWorkingIndicator(session: SessionSnapshot, showProcessingResponse: boolean): string {
+  if (showProcessingResponse) {
+    return '<div class="working-indicator">Processing your response</div>';
+  }
+
+  if (session.pendingRequest) {
+    return '';
+  }
+
+  if (session.status !== 'running') {
     return '';
   }
 
@@ -171,7 +179,8 @@ export function renderSessionDetail(
   session: SessionSnapshot,
   settingsOpen: boolean,
   globalSettings: GlobalSettings,
-  draftAttachments: AttachmentInfo[]
+  draftAttachments: AttachmentInfo[],
+  showProcessingResponse = false
 ): string {
   const statusLabel = formatStatusLabel(session.status);
   const hint = session.pendingRequest
@@ -248,7 +257,6 @@ export function renderSessionDetail(
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <div class="settings-section-divider"></div>
             <div class="settings-section-heading">
               <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot reply prompts</div>
               <button id="autopilot-prompt-add" class="settings-section-add" title="Add a new autopilot prompt" aria-label="Add a new autopilot prompt"><i data-lucide="plus" aria-hidden="true"></i></button>
@@ -293,6 +301,7 @@ export function renderSessionDetail(
       <section class="chat-transcript">
         ${renderChatMessages(session.chatMessages)}
       </section>
+      ${renderWorkingIndicator(session, showProcessingResponse)}
       ${renderQueuedPrompts(session)}
       <footer class="composer-shell">
         ${hint ? `<div class="composer-hint">${escapeHtml(hint)}</div>` : ''}
