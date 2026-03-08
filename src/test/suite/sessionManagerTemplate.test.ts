@@ -89,4 +89,19 @@ suite('sessionManagerTemplate', () => {
 
     assert.doesNotMatch(html, /class="working-indicator"/);
   });
+
+  test('renders a dismissible inline error above the composer', () => {
+    const html = renderSessionDetail(
+      createSessionSnapshot(),
+      false,
+      createGlobalSettings(),
+      [],
+      false,
+      'No workspace files available to attach.'
+    );
+
+    assert.match(html, /class="inline-error"/);
+    assert.match(html, /inline-error-dismiss/);
+    assert.match(html, /No workspace files available to attach\./);
+  });
 });

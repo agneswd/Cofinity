@@ -1565,11 +1565,36 @@ body::-webkit-scrollbar-corner,
 }
 
 .inline-error {
-  margin: 6px 10px;
+  margin: 0 10px 10px;
   padding: 5px 8px;
   border-left: 3px solid var(--vscode-inputValidation-errorBorder, #a1260d);
   background: color-mix(in srgb, var(--vscode-inputValidation-errorBackground, #5a1d1d) 25%, transparent);
   font-size: 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inline-error-text {
+  min-width: 0;
+}
+
+.inline-error-dismiss {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.inline-error-dismiss:hover {
+  color: var(--vscode-foreground);
 }
 
 /* layout is always two-column regardless of viewport */

@@ -75,6 +75,7 @@ export class SessionManagerApp {
   private settingsOpen = false;
   private sidebarCollapsed = false;
   private viewMode: 'session' | 'global' = 'session';
+  private inlineErrorMessage: string | null = null;
   private draggedQueuedPromptId: string | null = null;
   private draggedAutopilotPromptIndex: number | null = null;
   private composerRefocusAttemptsRemaining = 0;
@@ -168,7 +169,8 @@ export class SessionManagerApp {
         return;
       }
       case 'error':
-        this.renderInlineError(message.payload.message);
+        this.inlineErrorMessage = message.payload.message;
+        this.renderSession();
         return;
       case 'openSettings':
         this.openSettingsModal();
@@ -300,8 +302,9 @@ export class SessionManagerApp {
 
     if (this.viewMode === 'global') {
       this.sessionDetailElement.className = 'session-detail global-view-detail';
-      this.sessionDetailElement.innerHTML = renderGlobalPendingView(this.sessions, this.draftComposerBySession);
+      this.sessionDetailElement.innerHTML = renderGlobalPendingView(this.sessions, this.draftComposerBySession, this.inlineErrorMessage);
       this.bindGlobalViewEvents();
+      this.bindInlineErrorEvents();
       this.refreshIcons();
       return;
     }
@@ -318,10 +321,12 @@ export class SessionManagerApp {
       this.settingsOpen,
       this.globalSettings,
       this.draftAttachmentsBySession.get(this.session.sessionId) ?? [],
-      this.shouldShowProcessingIndicator(this.session)
+      this.shouldShowProcessingIndicator(this.session),
+      this.inlineErrorMessage
     );
 
     this.bindSessionEvents();
+    this.bindInlineErrorEvents();
     this.refreshIcons();
 
     if (this.composerRefocusAttemptsRemaining > 0) {
@@ -990,15 +995,12 @@ export class SessionManagerApp {
     });
   }
 
-  private renderInlineError(message: string): void {
-    if (!this.sessionDetailElement) {
-      return;
-    }
-
-    const errorBlock = document.createElement('div');
-    errorBlock.className = 'inline-error';
-    errorBlock.textContent = message;
-    this.sessionDetailElement.prepend(errorBlock);
+  private bindInlineErrorEvents(): void {
+    const dismissButton = document.getElementById('inline-error-dismiss') as HTMLButtonElement | null;
+    dismissButton?.addEventListener('click', () => {
+      this.inlineErrorMessage = null;
+      this.renderSession();
+    });
   }
 
   private reconcileComposerFocus(nextSession: SessionSnapshot | null): void {

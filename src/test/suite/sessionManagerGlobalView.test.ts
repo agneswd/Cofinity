@@ -54,4 +54,15 @@ suite('sessionManagerGlobalView', () => {
 
     assert.match(html, /No pending tool calls right now/);
   });
+
+  test('renders one dismissible inline error banner', () => {
+    const html = renderGlobalPendingView(
+      [createPendingSession()],
+      new Map(),
+      'No workspace files available to attach.'
+    );
+
+    assert.match(html, /class="inline-error"/);
+    assert.match(html, /inline-error-dismiss/);
+  });
 });

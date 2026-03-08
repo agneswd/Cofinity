@@ -14,9 +14,23 @@ function renderPendingOptions(options?: string[]): string {
   `;
 }
 
+function renderInlineError(message: string | null): string {
+  if (!message) {
+    return '';
+  }
+
+  return `
+    <div class="inline-error" role="alert">
+      <span class="inline-error-text">${escapeHtml(message)}</span>
+      <button id="inline-error-dismiss" class="inline-error-dismiss" aria-label="Dismiss error" title="Dismiss error">&times;</button>
+    </div>
+  `;
+}
+
 export function renderGlobalPendingView(
   sessions: SessionListItem[],
-  draftComposerBySession: ReadonlyMap<string, string>
+  draftComposerBySession: ReadonlyMap<string, string>,
+  inlineErrorMessage: string | null = null
 ): string {
   const pendingSessions = sessions.filter(
     (session): session is SessionListItem & { pendingRequest: NonNullable<SessionListItem['pendingRequest']> } => session.pendingRequest !== null
@@ -42,6 +56,7 @@ export function renderGlobalPendingView(
         </div>
         <div class="global-view-count-label">${escapeHtml(countLabel)}</div>
       </header>
+      ${renderInlineError(inlineErrorMessage)}
       <div class="global-view-list">
         ${pendingSessions
           .map((session) => {

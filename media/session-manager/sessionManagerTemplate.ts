@@ -129,6 +129,19 @@ function renderWorkingIndicator(session: SessionSnapshot, showProcessingResponse
   return '<div class="working-indicator">Working...</div>';
 }
 
+function renderInlineError(message: string | null): string {
+  if (!message) {
+    return '';
+  }
+
+  return `
+    <div class="inline-error" role="alert">
+      <span class="inline-error-text">${escapeHtml(message)}</span>
+      <button id="inline-error-dismiss" class="inline-error-dismiss" aria-label="Dismiss error" title="Dismiss error">&times;</button>
+    </div>
+  `;
+}
+
 export function renderSessionsList(sessions: SessionListItem[], selectedSessionId: string | null): string {
   if (sessions.length === 0) {
     return '<div class="empty-state">No active sessions.</div>';
@@ -180,7 +193,8 @@ export function renderSessionDetail(
   settingsOpen: boolean,
   globalSettings: GlobalSettings,
   draftAttachments: AttachmentInfo[],
-  showProcessingResponse = false
+  showProcessingResponse = false,
+  inlineErrorMessage: string | null = null
 ): string {
   const statusLabel = formatStatusLabel(session.status);
   const hint = session.pendingRequest
@@ -303,6 +317,7 @@ export function renderSessionDetail(
       </section>
       ${renderWorkingIndicator(session, showProcessingResponse)}
       ${renderQueuedPrompts(session)}
+      ${renderInlineError(inlineErrorMessage)}
       <footer class="composer-shell">
         ${hint ? `<div class="composer-hint">${escapeHtml(hint)}</div>` : ''}
         <div class="composer-card">
