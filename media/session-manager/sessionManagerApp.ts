@@ -52,6 +52,7 @@ export class SessionManagerApp {
   private readonly sessionDetailElement = document.getElementById('session-detail');
   private readonly globalViewToggleButton = document.getElementById('global-view-toggle') as HTMLButtonElement | null;
   private readonly globalViewCountElement = document.getElementById('global-view-count') as HTMLSpanElement | null;
+  private readonly sidebarResizer = document.getElementById('sidebar-resizer') as HTMLDivElement | null;
   private readonly sidebarToggleButton = document.getElementById('sidebar-toggle') as HTMLButtonElement | null;
   private readonly newSessionButton = document.getElementById('new-session-button') as HTMLButtonElement | null;
   private readonly appShell = document.querySelector('.app-shell') as HTMLElement | null;
@@ -74,6 +75,7 @@ export class SessionManagerApp {
   };
   private settingsOpen = false;
   private sidebarCollapsed = false;
+  private sidebarWidth = 240;
   private viewMode: 'session' | 'global' = 'session';
   private inlineErrorMessage: string | null = null;
   private draggedQueuedPromptId: string | null = null;
@@ -104,6 +106,9 @@ export class SessionManagerApp {
     this.sidebarToggleButton?.addEventListener('click', () => {
       this.sidebarCollapsed = !this.sidebarCollapsed;
       this.appShell?.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
+      if (!this.sidebarCollapsed) {
+        this.applySidebarWidth();
+      }
     });
 
     this.globalViewToggleButton?.addEventListener('click', () => {
@@ -113,11 +118,41 @@ export class SessionManagerApp {
     });
 
     this.newSessionButton?.addEventListener('click', () => {
-      this.vscode.postMessage({
-        protocolVersion: 1,
-        type: 'newCopilotSession',
-        payload: {}
-      });
+      this.openNewSession();
+    });
+
+    this.sidebarResizer?.addEventListener('pointerdown', (event) => {
+      if (this.sidebarCollapsed || !this.appShell) {
+        return;
+      }
+
+      event.preventDefault();
+      document.body.classList.add('is-sidebar-resizing');
+
+      const handlePointerMove = (moveEvent: PointerEvent) => {
+        const rect = this.appShell?.getBoundingClientRect();
+        if (!rect) {
+          return;
+        }
+
+        this.sidebarWidth = this.clampSidebarWidth(rect.right - moveEvent.clientX);
+        this.applySidebarWidth();
+      };
+
+      const handlePointerUp = () => {
+        document.body.classList.remove('is-sidebar-resizing');
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+      };
+
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+    });
+
+    window.addEventListener('resize', () => {
+      if (!this.sidebarCollapsed) {
+        this.applySidebarWidth();
+      }
     });
 
     this.vscode.postMessage({
@@ -126,6 +161,7 @@ export class SessionManagerApp {
       payload: {}
     });
 
+    this.applySidebarWidth();
     this.renderGlobalViewToggle();
     this.refreshIcons();
   }
@@ -311,7 +347,19 @@ export class SessionManagerApp {
 
     if (!this.session) {
       this.sessionDetailElement.className = 'session-detail empty-state';
-      this.sessionDetailElement.textContent = 'Select a session to open its chat view.';
+      this.sessionDetailElement.innerHTML = this.sessions.length === 0
+        ? `
+          <div class="empty-state-brand">
+            <span>Start a new session to get started.</span>
+            <button id="empty-new-session-button" class="empty-state-action" aria-label="Start a new Copilot session">
+              <i data-lucide="plus" aria-hidden="true"></i>
+              <span>New session</span>
+            </button>
+          </div>
+        `
+        : '<div class="empty-state-brand"><span>Select a session to open its chat view.</span></div>';
+      this.bindEmptyStateEvents();
+      this.refreshIcons();
       return;
     }
 
@@ -426,6 +474,13 @@ export class SessionManagerApp {
         this.draftComposerBySession.set(sessionId, '');
         this.renderSession();
       });
+    });
+  }
+
+  private bindEmptyStateEvents(): void {
+    const emptyStateButton = document.getElementById('empty-new-session-button') as HTMLButtonElement | null;
+    emptyStateButton?.addEventListener('click', () => {
+      this.openNewSession();
     });
   }
 
@@ -1003,6 +1058,14 @@ export class SessionManagerApp {
     });
   }
 
+  private openNewSession(): void {
+    this.vscode.postMessage({
+      protocolVersion: 1,
+      type: 'newCopilotSession',
+      payload: {}
+    });
+  }
+
   private reconcileComposerFocus(nextSession: SessionSnapshot | null): void {
     const activeElement = document.activeElement as HTMLElement | null;
     const composerWasFocused = activeElement?.id === 'composer-textarea';
@@ -1053,6 +1116,18 @@ export class SessionManagerApp {
 
     this.globalViewCountElement.classList.remove('is-hidden');
     this.globalViewCountElement.textContent = String(pendingCount);
+  }
+
+  private applySidebarWidth(): void {
+    const clampedWidth = this.clampSidebarWidth(this.sidebarWidth);
+    this.sidebarWidth = clampedWidth;
+    this.appShell?.style.setProperty('--session-sidebar-width', `${clampedWidth}px`);
+  }
+
+  private clampSidebarWidth(width: number): number {
+    const containerWidth = this.appShell?.getBoundingClientRect().width ?? window.innerWidth;
+    const maxWidth = Math.max(230, Math.min(420, containerWidth - 220));
+    return Math.max(230, Math.min(width, maxWidth));
   }
 
   private beginProcessingIndicator(sessionId: string): void {

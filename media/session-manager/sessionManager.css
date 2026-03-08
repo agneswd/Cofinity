@@ -76,8 +76,9 @@ body::-webkit-scrollbar-corner,
 /* ── Layout ─────────────────────────────────────────────── */
 
 .app-shell {
+  --session-sidebar-width: 240px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 240px;
+  grid-template-columns: minmax(0, 1fr) var(--session-sidebar-width);
   height: 100vh;
   background: #181818;
   transition: grid-template-columns 0.12s ease;
@@ -88,6 +89,7 @@ body::-webkit-scrollbar-corner,
 }
 
 .session-list-panel {
+  position: relative;
   order: 2;
   display: flex;
   flex-direction: column;
@@ -95,6 +97,24 @@ body::-webkit-scrollbar-corner,
   border-left: 1px solid var(--vscode-panel-border);
   background: var(--vscode-sideBar-background, var(--vscode-editor-background));
   overflow: hidden;
+}
+
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.sidebar-resizer:hover {
+  background: color-mix(in srgb, var(--vscode-focusBorder) 20%, transparent);
+}
+
+.sidebar-collapsed .sidebar-resizer {
+  display: none;
 }
 
 /* ── Sidebar toggle button ──────────────────────────────── */
@@ -306,6 +326,23 @@ body::-webkit-scrollbar-corner,
   align-items: center;
   gap: 14px;
   text-align: center;
+}
+
+.empty-state-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--vscode-panel-border);
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.empty-state-action:hover {
+  background: var(--vscode-button-hoverBackground);
 }
 
 .empty-state-logo {
@@ -1595,6 +1632,11 @@ body::-webkit-scrollbar-corner,
 
 .inline-error-dismiss:hover {
   color: var(--vscode-foreground);
+}
+
+body.is-sidebar-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 /* layout is always two-column regardless of viewport */

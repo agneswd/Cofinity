@@ -25,6 +25,15 @@ export function buildSessionManagerHtml(
   const logoUri = webview.asWebviewUri(
     vscode.Uri.joinPath(extensionUri, 'media', 'cofinity.svg')
   );
+  const emptyStateMarkup = `
+        <div class="empty-state-brand">
+          <img class="empty-state-logo" src="${logoUri}" alt="Cofinity logo" />
+          <span>Start a new session to get started.</span>
+          <button id="empty-new-session-button" class="empty-state-action" aria-label="Start a new Copilot session">
+            <i data-lucide="plus" aria-hidden="true"></i>
+            <span>New session</span>
+          </button>
+        </div>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -39,13 +48,11 @@ export function buildSessionManagerHtml(
   <div class="app-shell">
     <main class="session-detail-panel">
       <div id="session-detail" class="session-detail empty-state">
-        <div class="empty-state-brand">
-          <img class="empty-state-logo" src="${logoUri}" alt="Cofinity logo" />
-          <span>Select a session to open its chat view.</span>
-        </div>
+${emptyStateMarkup}
       </div>
     </main>
     <aside class="session-list-panel">
+      <div id="sidebar-resizer" class="sidebar-resizer" aria-hidden="true"></div>
       <div class="sidebar-topbar">
         <button id="global-view-toggle" class="sidebar-topbar-button" aria-label="Open global pending view" title="Global pending view">
           <span class="sidebar-topbar-icon" aria-hidden="true"><i data-lucide="inbox"></i></span>
