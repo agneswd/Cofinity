@@ -68,7 +68,7 @@ suite('sessionManagerTemplate', () => {
     );
 
     assert.match(html, /class="working-indicator"/);
-    assert.match(html, /Processing your response/);
+    assert.match(html, /Working\.\.\./);
   });
 
   test('does not render a working indicator when the session is waiting for input', () => {

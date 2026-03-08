@@ -115,7 +115,7 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
 
 function renderWorkingIndicator(session: SessionSnapshot, showProcessingResponse: boolean): string {
   if (showProcessingResponse) {
-    return '<div class="working-indicator">Processing your response</div>';
+    return '<div class="working-indicator">Working...</div>';
   }
 
   if (session.pendingRequest) {

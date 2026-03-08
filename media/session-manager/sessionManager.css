@@ -606,7 +606,7 @@ body::-webkit-scrollbar-corner,
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--vscode-progressBar-background, #0078d4);
+  background-color: var(--vscode-notificationsWarningIcon-foreground, #cca700);
   animation: working-pulse 1.4s ease-in-out infinite;
 }
 
