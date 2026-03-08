@@ -99,15 +99,19 @@ body::-webkit-scrollbar-corner,
 
 /* ── Sidebar toggle button ──────────────────────────────── */
 
-.sidebar-toggle {
+.sidebar-topbar {
   flex-shrink: 0;
-  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.sidebar-topbar-button {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 31px;
   border: 0;
-  border-bottom: 1px solid var(--vscode-panel-border);
   background: transparent;
   color: var(--vscode-descriptionForeground);
   cursor: pointer;
@@ -115,9 +119,38 @@ body::-webkit-scrollbar-corner,
   letter-spacing: 0.04em;
 }
 
-.sidebar-toggle:hover {
+.sidebar-topbar-button + .sidebar-topbar-button {
+  border-left: 1px solid var(--vscode-panel-border);
+}
+
+.sidebar-topbar-button:hover {
   background: var(--vscode-toolbar-hoverBackground);
   color: var(--vscode-foreground);
+}
+
+.sidebar-topbar-button.is-active {
+  color: var(--vscode-foreground);
+  background: color-mix(in srgb, var(--vscode-button-background) 18%, transparent);
+}
+
+.sidebar-topbar-icon,
+.sidebar-topbar-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-topbar-count {
+  min-width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--vscode-panel-border);
+  border-radius: 999px;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--vscode-foreground);
+  background: color-mix(in srgb, var(--vscode-button-background) 22%, transparent);
 }
 
 .sidebar-toggle-icon {
@@ -466,6 +499,139 @@ body::-webkit-scrollbar-corner,
   height: 100%;
   overflow: hidden;
   background: #181818;
+}
+
+.global-view-detail {
+  overflow: hidden;
+}
+
+.global-view-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #181818;
+}
+
+.global-view-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+.global-view-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vscode-descriptionForeground);
+}
+
+.global-view-title {
+  margin-top: 3px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+}
+
+.global-view-count-label {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.global-view-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.global-view-card {
+  border: 1px solid var(--vscode-panel-border);
+  background: color-mix(in srgb, var(--vscode-editor-background) 82%, black 18%);
+}
+
+.global-view-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px 8px;
+}
+
+.global-view-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.global-view-open-session {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vscode-foreground);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.global-view-open-session:hover {
+  color: var(--vscode-textLink-foreground);
+}
+
+.global-view-card-meta {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground);
+  white-space: nowrap;
+}
+
+.global-view-prompt {
+  padding: 0 12px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.global-view-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 12px 10px;
+}
+
+.global-view-option-chip {
+  padding: 2px 7px;
+  border: 1px solid var(--vscode-panel-border);
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  font-size: 10px;
+}
+
+.global-view-response-card {
+  margin: 0 10px 10px;
+}
+
+.global-view-response-footer {
+  justify-content: space-between;
+}
+
+.global-view-response-meta {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.global-view-empty {
+  justify-content: center;
 }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -1110,7 +1276,8 @@ body::-webkit-scrollbar-corner,
 .settings-section-add i,
 .attachment-chip-icon i,
 .queue-delete-button i,
-.sidebar-toggle-icon i {
+.sidebar-toggle-icon i,
+.sidebar-topbar-icon i {
   width: 14px;
   height: 14px;
 }

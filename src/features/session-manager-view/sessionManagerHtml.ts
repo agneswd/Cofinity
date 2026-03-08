@@ -46,9 +46,15 @@ export function buildSessionManagerHtml(
       </div>
     </main>
     <aside class="session-list-panel">
-      <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
-        <span class="sidebar-toggle-icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
-      </button>
+      <div class="sidebar-topbar">
+        <button id="global-view-toggle" class="sidebar-topbar-button" aria-label="Open global pending view" title="Global pending view">
+          <span class="sidebar-topbar-icon" aria-hidden="true"><i data-lucide="inbox"></i></span>
+          <span id="global-view-count" class="sidebar-topbar-count is-hidden">0</span>
+        </button>
+        <button id="sidebar-toggle" class="sidebar-topbar-button sidebar-toggle" aria-label="Toggle sidebar" title="Collapse sidebar">
+          <span class="sidebar-toggle-icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
+        </button>
+      </div>
       <div class="panel-heading">
         <div class="panel-heading-brand">
           <img class="panel-heading-logo" src="${logoUri}" alt="Cofinity logo" />

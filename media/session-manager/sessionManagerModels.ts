@@ -22,6 +22,13 @@ export type SessionListItem = {
   status: string;
   queuedCount: number;
   hasPendingRequest: boolean;
+  pendingRequest: null | {
+    requestId: string;
+    prompt: string;
+    kind: string;
+    options?: string[];
+    createdAtMs: number;
+  };
   toolCalls: number;
   lastActiveAtMs: number;
 };

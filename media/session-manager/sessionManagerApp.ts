@@ -4,6 +4,7 @@ import {
   FileText,
   Image,
   ImagePlus,
+  Inbox,
   Pencil,
   Plus,
   Send,
@@ -16,6 +17,7 @@ import type {
   SessionListItem,
   SessionSnapshot
 } from './sessionManagerModels';
+import { renderGlobalPendingView } from './sessionManagerGlobalView';
 import { playRequestSound, primeRequestSound } from './sessionManagerSound';
 import { renderSessionDetail, renderSessionsList } from './sessionManagerTemplate';
 
@@ -34,6 +36,7 @@ interface ProcessingIndicatorState {
 
 const LUCIDE_ICONS = {
   'chevron-left': ChevronLeft,
+  inbox: Inbox,
   plus: Plus,
   pencil: Pencil,
   'trash-2': Trash2,
@@ -47,6 +50,8 @@ export class SessionManagerApp {
   private readonly vscode: WebviewApi;
   private readonly sessionsListElement = document.getElementById('sessions-list');
   private readonly sessionDetailElement = document.getElementById('session-detail');
+  private readonly globalViewToggleButton = document.getElementById('global-view-toggle') as HTMLButtonElement | null;
+  private readonly globalViewCountElement = document.getElementById('global-view-count') as HTMLSpanElement | null;
   private readonly sidebarToggleButton = document.getElementById('sidebar-toggle') as HTMLButtonElement | null;
   private readonly newSessionButton = document.getElementById('new-session-button') as HTMLButtonElement | null;
   private readonly appShell = document.querySelector('.app-shell') as HTMLElement | null;
@@ -69,6 +74,7 @@ export class SessionManagerApp {
   };
   private settingsOpen = false;
   private sidebarCollapsed = false;
+  private viewMode: 'session' | 'global' = 'session';
   private draggedQueuedPromptId: string | null = null;
   private draggedAutopilotPromptIndex: number | null = null;
   private composerRefocusAttemptsRemaining = 0;
@@ -99,6 +105,12 @@ export class SessionManagerApp {
       this.appShell?.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
     });
 
+    this.globalViewToggleButton?.addEventListener('click', () => {
+      this.viewMode = this.viewMode === 'global' ? 'session' : 'global';
+      this.renderGlobalViewToggle();
+      this.renderSession();
+    });
+
     this.newSessionButton?.addEventListener('click', () => {
       this.vscode.postMessage({
         protocolVersion: 1,
@@ -113,6 +125,7 @@ export class SessionManagerApp {
       payload: {}
     });
 
+    this.renderGlobalViewToggle();
     this.refreshIcons();
   }
 
@@ -187,6 +200,11 @@ export class SessionManagerApp {
     this.selectedSessionId = selectedSessionId;
     this.sessions = sessions;
     this.renderSessions();
+    this.renderGlobalViewToggle();
+
+    if (this.viewMode === 'global') {
+      this.renderSession();
+    }
   }
 
   private renderSessions(): void {
@@ -280,6 +298,14 @@ export class SessionManagerApp {
       return;
     }
 
+    if (this.viewMode === 'global') {
+      this.sessionDetailElement.className = 'session-detail global-view-detail';
+      this.sessionDetailElement.innerHTML = renderGlobalPendingView(this.sessions, this.draftComposerBySession);
+      this.bindGlobalViewEvents();
+      this.refreshIcons();
+      return;
+    }
+
     if (!this.session) {
       this.sessionDetailElement.className = 'session-detail empty-state';
       this.sessionDetailElement.textContent = 'Select a session to open its chat view.';
@@ -303,6 +329,99 @@ export class SessionManagerApp {
       composerTextarea?.focus();
       this.composerRefocusAttemptsRemaining -= 1;
     }
+  }
+
+  private bindGlobalViewEvents(): void {
+    this.sessionDetailElement?.querySelectorAll<HTMLButtonElement>('[data-global-open-session-id]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sessionId = button.dataset.globalOpenSessionId;
+        if (!sessionId) {
+          return;
+        }
+
+        this.viewMode = 'session';
+        this.renderGlobalViewToggle();
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'selectSession',
+          payload: { sessionId }
+        });
+      });
+    });
+
+    this.sessionDetailElement?.querySelectorAll<HTMLTextAreaElement>('.global-view-response-input').forEach((textarea) => {
+      const sessionId = textarea.dataset.globalSessionId;
+      if (!sessionId) {
+        return;
+      }
+
+      textarea.value = this.draftComposerBySession.get(sessionId) ?? '';
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(textarea.scrollHeight, 36)}px`;
+
+      const sendButton = this.sessionDetailElement?.querySelector<HTMLButtonElement>(`[data-global-send-session-id="${sessionId}"]`) ?? null;
+      const updateSendButtonState = () => {
+        if (!sendButton) {
+          return;
+        }
+
+        sendButton.disabled = textarea.value.trim().length === 0;
+      };
+
+      updateSendButtonState();
+
+      textarea.addEventListener('input', () => {
+        this.draftComposerBySession.set(sessionId, textarea.value);
+        textarea.style.height = 'auto';
+        textarea.style.height = `${Math.max(textarea.scrollHeight, 36)}px`;
+        updateSendButtonState();
+      });
+
+      textarea.addEventListener('keydown', (event) => {
+        const enterSends = this.globalSettings.enterSends;
+        if (enterSends) {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendButton?.click();
+          }
+          return;
+        }
+
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+          event.preventDefault();
+          sendButton?.click();
+        }
+      });
+    });
+
+    this.sessionDetailElement?.querySelectorAll<HTMLButtonElement>('[data-global-send-session-id]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sessionId = button.dataset.globalSendSessionId;
+        if (!sessionId) {
+          return;
+        }
+
+        const textarea = this.sessionDetailElement?.querySelector<HTMLTextAreaElement>(`.global-view-response-input[data-global-session-id="${sessionId}"]`) ?? null;
+        const content = textarea?.value.trim() ?? '';
+        if (!content) {
+          return;
+        }
+
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'submitComposerInput',
+          sessionId,
+          payload: {
+            content,
+            attachments: []
+          }
+        });
+
+        this.beginProcessingIndicator(sessionId);
+        this.draftComposerBySession.set(sessionId, '');
+        this.renderSession();
+      });
+    });
   }
 
   private bindSessionEvents(): void {
@@ -892,6 +1011,10 @@ export class SessionManagerApp {
   }
 
   private shouldAutoFocusComposer(nextSession: SessionSnapshot | null): boolean {
+    if (this.viewMode === 'global') {
+      return false;
+    }
+
     if (!nextSession?.pendingRequest) {
       return false;
     }
@@ -906,6 +1029,28 @@ export class SessionManagerApp {
 
   private shouldShowProcessingIndicator(session: SessionSnapshot): boolean {
     return this.processingResponseBySession.has(session.sessionId);
+  }
+
+  private renderGlobalViewToggle(): void {
+    const pendingCount = this.sessions.filter((session) => session.hasPendingRequest).length;
+    this.globalViewToggleButton?.classList.toggle('is-active', this.viewMode === 'global');
+    this.globalViewToggleButton?.setAttribute(
+      'title',
+      pendingCount > 0 ? `Global pending view (${pendingCount})` : 'Global pending view'
+    );
+
+    if (!this.globalViewCountElement) {
+      return;
+    }
+
+    if (pendingCount === 0) {
+      this.globalViewCountElement.classList.add('is-hidden');
+      this.globalViewCountElement.textContent = '0';
+      return;
+    }
+
+    this.globalViewCountElement.classList.remove('is-hidden');
+    this.globalViewCountElement.textContent = String(pendingCount);
   }
 
   private beginProcessingIndicator(sessionId: string): void {

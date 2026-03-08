@@ -21,6 +21,7 @@ export interface SessionListItemSnapshot {
   status: SessionStatus;
   queuedCount: number;
   hasPendingRequest: boolean;
+  pendingRequest: PendingUserRequest | null;
   toolCalls: number;
   lastActiveAtMs: number;
 }
@@ -53,6 +54,7 @@ export function toSessionListItemSnapshot(state: SessionState): SessionListItemS
     status: state.status,
     queuedCount: state.promptQueue.length,
     hasPendingRequest: state.pendingRequest !== null,
+    pendingRequest: state.pendingRequest,
     toolCalls: state.stats.toolCalls,
     lastActiveAtMs: state.lastActiveAtMs
   };
