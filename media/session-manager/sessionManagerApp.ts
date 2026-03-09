@@ -1141,12 +1141,6 @@ export class SessionManagerApp {
       startedAtMs: Date.now()
     });
     const timeoutHandle = window.setTimeout(() => {
-      this.vscode.postMessage({
-        protocolVersion: 1,
-        type: 'markSessionInterrupted',
-        sessionId,
-        payload: {}
-      });
       this.clearProcessingIndicator(sessionId);
       if (this.session?.sessionId === sessionId) {
         this.renderSession();

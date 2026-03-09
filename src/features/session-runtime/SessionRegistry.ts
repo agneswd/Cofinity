@@ -185,15 +185,6 @@ export class SessionRegistry implements vscode.Disposable {
     return true;
   }
 
-  public markSessionInterrupted(sessionId: SessionId): boolean {
-    const controller = this.controllers.get(sessionId);
-    if (!controller) {
-      return false;
-    }
-
-    return controller.markInterruptedIfAwaitingFollowUp();
-  }
-
   public disposeSession(sessionId: SessionId): boolean {
     const controller = this.controllers.get(sessionId);
     if (!controller) {

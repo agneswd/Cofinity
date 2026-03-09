@@ -342,30 +342,32 @@ suite('SessionRegistry', () => {
     assert.equal(resultB.response, 'beta survives');
   });
 
-  test('marks a session interrupted when a handed-off follow up never returns', async () => {
-    const stalledRegistry = new SessionRegistry();
+  test('does not mark an interrupted session active just because a prompt was queued', async () => {
     const token = new vscode.CancellationTokenSource();
 
+    void registry.handleToolInvocation({
+      question: 'restore me later',
+      requestKind: 'question',
+      token: token.token
+    });
+
+    await waitFor(() => registry.buildManagerSnapshot().sessions.length === 1);
+
+    const persisted = registry.exportPersistedSessions().map((record) => ({
+      ...record,
+      status: 'interrupted' as const
+    }));
+
+    const restoredRegistry = new SessionRegistry();
+
     try {
-      const request = stalledRegistry.handleToolInvocation({
-        question: 'watch for interruption',
-        requestKind: 'question',
-        token: token.token
-      });
+      restoredRegistry.restoreSessions(persisted);
+      const sessionId = restoredRegistry.buildManagerSnapshot().sessions[0].sessionId;
 
-      await waitFor(() => stalledRegistry.buildManagerSnapshot().sessions.length === 1);
-      const sessionId = stalledRegistry.buildManagerSnapshot().sessions[0].sessionId;
-
-      stalledRegistry.selectSession(sessionId);
-      const detail = stalledRegistry.getSelectedSessionSnapshot();
-      assert.ok(detail?.pendingRequest);
-      stalledRegistry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'continue');
-      await request;
-
-      assert.equal(stalledRegistry.markSessionInterrupted(sessionId), true);
-      assert.equal(stalledRegistry.getSessionSnapshot(sessionId)?.status, 'interrupted');
+      assert.equal(restoredRegistry.enqueuePrompt(sessionId, 'queued on stale session'), true);
+      assert.equal(restoredRegistry.getSessionSnapshot(sessionId)?.status, 'interrupted');
     } finally {
-      stalledRegistry.dispose();
+      restoredRegistry.dispose();
       token.cancel();
     }
   });

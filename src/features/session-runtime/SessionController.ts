@@ -45,7 +45,6 @@ export class SessionController implements vscode.Disposable {
 
   private pendingResponse: Deferred<PendingResponsePayload> | null = null;
   private pendingCancellation: vscode.Disposable | null = null;
-  private awaitingAgentFollowUp = false;
 
   private readonly sessionState: SessionState;
 
@@ -96,7 +95,6 @@ export class SessionController implements vscode.Disposable {
     this.sessionState.stats = summary.stats;
     this.sessionState.pendingRequest = null;
     this.sessionState.inflight = null;
-    this.awaitingAgentFollowUp = false;
   }
 
   public async runRequest(options: RunRequestOptions): Promise<CofinityRequestInputResult> {
@@ -122,7 +120,7 @@ export class SessionController implements vscode.Disposable {
     };
 
     this.sessionState.promptQueue.push(item);
-    this.touch('active');
+    this.touchPreservingStatus();
     this.pushHistory('queueItemAdded', 'Queued a prompt for the next tool call.');
     this.onDidChangeStateEmitter.fire();
   }
@@ -140,7 +138,7 @@ export class SessionController implements vscode.Disposable {
 
     queueItem.content = trimmed;
     this.updateChatMessageContent(queueItem.chatMessageId, trimmed);
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.touchPreservingStatus();
     this.pushHistory('queueItemAdded', 'Edited a queued prompt.');
     this.onDidChangeStateEmitter.fire();
     return true;
@@ -161,7 +159,7 @@ export class SessionController implements vscode.Disposable {
     const [item] = nextQueue.splice(sourceIndex, 1);
     nextQueue.splice(targetIndex, 0, item);
     this.sessionState.promptQueue = nextQueue;
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.touchPreservingStatus();
     this.pushHistory('queueItemAdded', 'Reordered queued prompts.');
     this.onDidChangeStateEmitter.fire();
     return true;
@@ -174,7 +172,7 @@ export class SessionController implements vscode.Disposable {
     }
 
     this.sessionState.promptQueue = nextQueue;
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.touchPreservingStatus();
     this.pushHistory('queueItemReleased', 'Removed a queued prompt.');
     this.onDidChangeStateEmitter.fire();
     return true;
@@ -186,7 +184,7 @@ export class SessionController implements vscode.Disposable {
     }
 
     this.sessionState.promptQueue = [];
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.touchPreservingStatus();
     this.pushHistory('queueItemReleased', 'Cleared all queued prompts.');
     this.onDidChangeStateEmitter.fire();
   }
@@ -194,7 +192,7 @@ export class SessionController implements vscode.Disposable {
   public setAutopilotEnabled(enabled: boolean): void {
     this.sessionState.autopilot.mode = enabled ? 'drainQueue' : 'off';
     this.sessionState.autopilot.maxTurns ??= 20;
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.touchPreservingStatus();
     this.onDidChangeStateEmitter.fire();
   }
 
@@ -213,7 +211,7 @@ export class SessionController implements vscode.Disposable {
     if (this.sessionState.autopilot.turnsUsed > normalized) {
       this.sessionState.autopilot.turnsUsed = normalized;
     }
-    this.touch(this.sessionState.pendingRequest ? 'waitingForUser' : 'active');
+    this.touchPreservingStatus();
     this.onDidChangeStateEmitter.fire();
   }
 
@@ -236,28 +234,14 @@ export class SessionController implements vscode.Disposable {
     return true;
   }
 
-  public markInterruptedIfAwaitingFollowUp(): boolean {
-    if (!this.awaitingAgentFollowUp || this.sessionState.pendingRequest || this.sessionState.inflight) {
-      return false;
-    }
-
-    this.awaitingAgentFollowUp = false;
-    this.touch('interrupted');
-    this.pushHistory('error', 'Agent stopped returning to Cofinity; marked the session as interrupted.');
-    this.onDidChangeStateEmitter.fire();
-    return true;
-  }
-
   public dispose(): void {
     this.rejectPending(new Error('Session disposed.'));
-    this.awaitingAgentFollowUp = false;
     this.touch('disposed');
     this.onDidChangeStateEmitter.fire();
     this.onDidChangeStateEmitter.dispose();
   }
 
   private async handleRequest(options: RunRequestOptions): Promise<CofinityRequestInputResult> {
-    this.awaitingAgentFollowUp = false;
     this.sessionState.stats.toolCalls += 1;
     this.sessionState.inflight = {
       invocationId: createRequestId(),
@@ -305,7 +289,7 @@ export class SessionController implements vscode.Disposable {
     } finally {
       const wasCancelled = this.sessionState.inflight?.cancelled ?? false;
       this.sessionState.inflight = null;
-      if (!this.sessionState.pendingRequest && this.sessionState.status !== 'disposed' && !this.awaitingAgentFollowUp) {
+      if (!this.sessionState.pendingRequest && this.sessionState.status !== 'disposed') {
         this.touch(wasCancelled ? 'interrupted' : 'active');
       }
       this.onDidChangeStateEmitter.fire();
@@ -371,7 +355,6 @@ export class SessionController implements vscode.Disposable {
         relatedRequestId: pendingRequest.requestId
       });
       this.pushHistory('userResponded', 'Resolved a pending user request.');
-      this.awaitingAgentFollowUp = true;
 
       return {
         sessionId: this.sessionState.sessionId,
@@ -407,8 +390,7 @@ export class SessionController implements vscode.Disposable {
       createdAtMs: Date.now()
     });
     this.pushHistory('queueItemReleased', 'Released a queued prompt to the tool caller.');
-    this.touch('running');
-    this.awaitingAgentFollowUp = true;
+    this.touchPreservingStatus();
     return next;
   }
 
@@ -431,6 +413,10 @@ export class SessionController implements vscode.Disposable {
     this.pendingCancellation = null;
     this.pendingResponse = null;
     this.sessionState.pendingRequest = null;
+  }
+
+  private touchPreservingStatus(): void {
+    this.sessionState.lastActiveAtMs = Date.now();
   }
 
   private touch(status: SessionState['status']): void {
