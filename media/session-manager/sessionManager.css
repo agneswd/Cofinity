@@ -561,6 +561,12 @@ body::-webkit-scrollbar-corner,
   background: #181818;
 }
 
+.session-detail.empty-state {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
 .chat-shell {
   display: flex;
   flex-direction: column;
