@@ -18,58 +18,90 @@ body {
 }
 body,
 .session-list,
+.session-detail,
+.session-detail-panel,
 .chat-transcript,
+.global-view-list,
 .queue-stack-list,
 .settings-modal,
-.autopilot-prompts-list {
+.autopilot-prompts-list,
+.queue-inline-editor,
+.global-view-response-input {
   scrollbar-width: thin;
   scrollbar-color: #505050 #181818;
 }
 
 body::-webkit-scrollbar,
 .session-list::-webkit-scrollbar,
+.session-detail::-webkit-scrollbar,
+.session-detail-panel::-webkit-scrollbar,
 .chat-transcript::-webkit-scrollbar,
+.global-view-list::-webkit-scrollbar,
 .queue-stack-list::-webkit-scrollbar,
 .settings-modal::-webkit-scrollbar,
-.autopilot-prompts-list::-webkit-scrollbar {
+.autopilot-prompts-list::-webkit-scrollbar,
+.queue-inline-editor::-webkit-scrollbar,
+.global-view-response-input::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 body::-webkit-scrollbar-track,
 .session-list::-webkit-scrollbar-track,
+.session-detail::-webkit-scrollbar-track,
+.session-detail-panel::-webkit-scrollbar-track,
 .chat-transcript::-webkit-scrollbar-track,
+.global-view-list::-webkit-scrollbar-track,
 .queue-stack-list::-webkit-scrollbar-track,
 .settings-modal::-webkit-scrollbar-track,
-.autopilot-prompts-list::-webkit-scrollbar-track {
+.autopilot-prompts-list::-webkit-scrollbar-track,
+.queue-inline-editor::-webkit-scrollbar-track,
+.global-view-response-input::-webkit-scrollbar-track {
   background: #181818;
+  border-radius: 0;
 }
 
 body::-webkit-scrollbar-thumb,
 .session-list::-webkit-scrollbar-thumb,
+.session-detail::-webkit-scrollbar-thumb,
+.session-detail-panel::-webkit-scrollbar-thumb,
 .chat-transcript::-webkit-scrollbar-thumb,
+.global-view-list::-webkit-scrollbar-thumb,
 .queue-stack-list::-webkit-scrollbar-thumb,
 .settings-modal::-webkit-scrollbar-thumb,
-.autopilot-prompts-list::-webkit-scrollbar-thumb {
+.autopilot-prompts-list::-webkit-scrollbar-thumb,
+.queue-inline-editor::-webkit-scrollbar-thumb,
+.global-view-response-input::-webkit-scrollbar-thumb {
   background: #505050;
   border: 2px solid #181818;
+  border-radius: 0;
 }
 
 body::-webkit-scrollbar-thumb:hover,
 .session-list::-webkit-scrollbar-thumb:hover,
+.session-detail::-webkit-scrollbar-thumb:hover,
+.session-detail-panel::-webkit-scrollbar-thumb:hover,
 .chat-transcript::-webkit-scrollbar-thumb:hover,
+.global-view-list::-webkit-scrollbar-thumb:hover,
 .queue-stack-list::-webkit-scrollbar-thumb:hover,
 .settings-modal::-webkit-scrollbar-thumb:hover,
-.autopilot-prompts-list::-webkit-scrollbar-thumb:hover {
+.autopilot-prompts-list::-webkit-scrollbar-thumb:hover,
+.queue-inline-editor::-webkit-scrollbar-thumb:hover,
+.global-view-response-input::-webkit-scrollbar-thumb:hover {
   background: #6a6a6a;
 }
 
 body::-webkit-scrollbar-corner,
 .session-list::-webkit-scrollbar-corner,
+.session-detail::-webkit-scrollbar-corner,
+.session-detail-panel::-webkit-scrollbar-corner,
 .chat-transcript::-webkit-scrollbar-corner,
+.global-view-list::-webkit-scrollbar-corner,
 .queue-stack-list::-webkit-scrollbar-corner,
 .settings-modal::-webkit-scrollbar-corner,
-.autopilot-prompts-list::-webkit-scrollbar-corner {
+.autopilot-prompts-list::-webkit-scrollbar-corner,
+.queue-inline-editor::-webkit-scrollbar-corner,
+.global-view-response-input::-webkit-scrollbar-corner {
   background: #181818;
 }
 
