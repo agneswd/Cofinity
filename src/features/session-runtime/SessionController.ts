@@ -39,23 +39,17 @@ interface PendingResponsePayload {
   attachments: AttachmentInfo[];
 }
 
-export interface SessionControllerOptions {
-  agentFollowUpTimeoutMs?: number;
-}
-
-const DEFAULT_AGENT_FOLLOW_UP_TIMEOUT_MS = 15000;
-
 export class SessionController implements vscode.Disposable {
   private readonly onDidChangeStateEmitter = new vscode.EventEmitter<void>();
   private readonly mutex = new Mutex();
 
   private pendingResponse: Deferred<PendingResponsePayload> | null = null;
   private pendingCancellation: vscode.Disposable | null = null;
-  private followUpTimeout: NodeJS.Timeout | null = null;
+  private awaitingAgentFollowUp = false;
 
   private readonly sessionState: SessionState;
 
-  constructor(sessionId: SessionId, title: string, private readonly options: SessionControllerOptions = {}) {
+  constructor(sessionId: SessionId, title: string) {
     const now = Date.now();
 
     this.sessionState = {
@@ -102,7 +96,7 @@ export class SessionController implements vscode.Disposable {
     this.sessionState.stats = summary.stats;
     this.sessionState.pendingRequest = null;
     this.sessionState.inflight = null;
-    this.clearAgentFollowUpTimeout();
+    this.awaitingAgentFollowUp = false;
   }
 
   public async runRequest(options: RunRequestOptions): Promise<CofinityRequestInputResult> {
@@ -242,16 +236,28 @@ export class SessionController implements vscode.Disposable {
     return true;
   }
 
+  public markInterruptedIfAwaitingFollowUp(): boolean {
+    if (!this.awaitingAgentFollowUp || this.sessionState.pendingRequest || this.sessionState.inflight) {
+      return false;
+    }
+
+    this.awaitingAgentFollowUp = false;
+    this.touch('interrupted');
+    this.pushHistory('error', 'Agent stopped returning to Cofinity; marked the session as interrupted.');
+    this.onDidChangeStateEmitter.fire();
+    return true;
+  }
+
   public dispose(): void {
     this.rejectPending(new Error('Session disposed.'));
-    this.clearAgentFollowUpTimeout();
+    this.awaitingAgentFollowUp = false;
     this.touch('disposed');
     this.onDidChangeStateEmitter.fire();
     this.onDidChangeStateEmitter.dispose();
   }
 
   private async handleRequest(options: RunRequestOptions): Promise<CofinityRequestInputResult> {
-    this.clearAgentFollowUpTimeout();
+    this.awaitingAgentFollowUp = false;
     this.sessionState.stats.toolCalls += 1;
     this.sessionState.inflight = {
       invocationId: createRequestId(),
@@ -299,7 +305,7 @@ export class SessionController implements vscode.Disposable {
     } finally {
       const wasCancelled = this.sessionState.inflight?.cancelled ?? false;
       this.sessionState.inflight = null;
-      if (!this.sessionState.pendingRequest && this.sessionState.status !== 'disposed' && !this.hasPendingAgentFollowUp()) {
+      if (!this.sessionState.pendingRequest && this.sessionState.status !== 'disposed' && !this.awaitingAgentFollowUp) {
         this.touch(wasCancelled ? 'interrupted' : 'active');
       }
       this.onDidChangeStateEmitter.fire();
@@ -365,7 +371,7 @@ export class SessionController implements vscode.Disposable {
         relatedRequestId: pendingRequest.requestId
       });
       this.pushHistory('userResponded', 'Resolved a pending user request.');
-      this.scheduleAgentFollowUpTimeout();
+      this.awaitingAgentFollowUp = true;
 
       return {
         sessionId: this.sessionState.sessionId,
@@ -402,7 +408,7 @@ export class SessionController implements vscode.Disposable {
     });
     this.pushHistory('queueItemReleased', 'Released a queued prompt to the tool caller.');
     this.touch('running');
-    this.scheduleAgentFollowUpTimeout();
+    this.awaitingAgentFollowUp = true;
     return next;
   }
 
@@ -425,36 +431,6 @@ export class SessionController implements vscode.Disposable {
     this.pendingCancellation = null;
     this.pendingResponse = null;
     this.sessionState.pendingRequest = null;
-  }
-
-  private scheduleAgentFollowUpTimeout(): void {
-    this.clearAgentFollowUpTimeout();
-
-    const timeoutMs = this.options.agentFollowUpTimeoutMs ?? DEFAULT_AGENT_FOLLOW_UP_TIMEOUT_MS;
-    this.followUpTimeout = setTimeout(() => {
-      this.followUpTimeout = null;
-
-      if (this.sessionState.pendingRequest || this.sessionState.inflight || this.sessionState.status === 'disposed') {
-        return;
-      }
-
-      this.touch('interrupted');
-      this.pushHistory('error', 'Agent stopped returning to Cofinity; marked the session as interrupted.');
-      this.onDidChangeStateEmitter.fire();
-    }, timeoutMs);
-  }
-
-  private clearAgentFollowUpTimeout(): void {
-    if (!this.followUpTimeout) {
-      return;
-    }
-
-    clearTimeout(this.followUpTimeout);
-    this.followUpTimeout = null;
-  }
-
-  private hasPendingAgentFollowUp(): boolean {
-    return this.followUpTimeout !== null;
   }
 
   private touch(status: SessionState['status']): void {

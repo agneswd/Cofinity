@@ -37,5 +37,6 @@ export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'setAutopilotMaxTurns', { maxTurns: number }>
   | ProtocolEnvelope<'updateGlobalSettings', GlobalSettings>
   | ProtocolEnvelope<'renameSession', { newTitle: string }>
+  | ProtocolEnvelope<'markSessionInterrupted', Record<string, never>>
   | ProtocolEnvelope<'disposeSession', Record<string, never>>
   | ProtocolEnvelope<'clearQueue', Record<string, never>>;

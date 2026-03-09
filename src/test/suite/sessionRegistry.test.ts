@@ -342,30 +342,30 @@ suite('SessionRegistry', () => {
     assert.equal(resultB.response, 'beta survives');
   });
 
-  test('marks a session interrupted when the agent stops returning after a user response', async () => {
-    const shortTimeoutRegistry = new SessionRegistry({ agentFollowUpTimeoutMs: 20 });
+  test('marks a session interrupted when a handed-off follow up never returns', async () => {
+    const stalledRegistry = new SessionRegistry();
     const token = new vscode.CancellationTokenSource();
 
     try {
-      const request = shortTimeoutRegistry.handleToolInvocation({
+      const request = stalledRegistry.handleToolInvocation({
         question: 'watch for interruption',
         requestKind: 'question',
         token: token.token
       });
 
-      await waitFor(() => shortTimeoutRegistry.buildManagerSnapshot().sessions.length === 1);
-      const sessionId = shortTimeoutRegistry.buildManagerSnapshot().sessions[0].sessionId;
+      await waitFor(() => stalledRegistry.buildManagerSnapshot().sessions.length === 1);
+      const sessionId = stalledRegistry.buildManagerSnapshot().sessions[0].sessionId;
 
-      shortTimeoutRegistry.selectSession(sessionId);
-      const detail = shortTimeoutRegistry.getSelectedSessionSnapshot();
+      stalledRegistry.selectSession(sessionId);
+      const detail = stalledRegistry.getSelectedSessionSnapshot();
       assert.ok(detail?.pendingRequest);
-      shortTimeoutRegistry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'continue');
+      stalledRegistry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'continue');
       await request;
 
-      await waitFor(() => shortTimeoutRegistry.getSessionSnapshot(sessionId)?.status === 'interrupted', 500);
-      assert.equal(shortTimeoutRegistry.getSessionSnapshot(sessionId)?.status, 'interrupted');
+      assert.equal(stalledRegistry.markSessionInterrupted(sessionId), true);
+      assert.equal(stalledRegistry.getSessionSnapshot(sessionId)?.status, 'interrupted');
     } finally {
-      shortTimeoutRegistry.dispose();
+      stalledRegistry.dispose();
       token.cancel();
     }
   });

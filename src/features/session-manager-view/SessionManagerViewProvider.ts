@@ -196,6 +196,13 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
           this.postError('Failed to rename the selected session.');
         }
         return;
+      case 'markSessionInterrupted':
+        if (!message.sessionId) {
+          this.postError('Missing sessionId for markSessionInterrupted.');
+          return;
+        }
+        this.sessionRegistry.markSessionInterrupted(message.sessionId);
+        return;
       case 'clearQueue':
         if (!message.sessionId) {
           this.postError('Missing sessionId for clearQueue.');
