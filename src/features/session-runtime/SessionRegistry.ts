@@ -8,7 +8,7 @@ import {
   type SessionManagerSnapshot,
   type SessionSnapshot
 } from './sessionSnapshot';
-import { SessionController, type SessionRestoreState } from './SessionController';
+import { SessionController, type SessionControllerOptions, type SessionRestoreState } from './SessionController';
 import { SessionTokenRouter } from './SessionTokenRouter';
 import type { AttachmentInfo, SessionId, SessionRequestKind } from './sessionTypes';
 
@@ -20,6 +20,8 @@ export interface HandleToolInvocationOptions {
   token: vscode.CancellationToken;
   toolInvocationToken?: unknown;
 }
+
+export interface SessionRegistryOptions extends SessionControllerOptions {}
 
 function deriveSessionTitle(question: string): string {
   const compact = question.trim().replace(/\s+/g, ' ');
@@ -42,6 +44,8 @@ export class SessionRegistry implements vscode.Disposable {
   private readonly tokenRouter = new SessionTokenRouter();
 
   private selectedSessionId: SessionId | null = null;
+
+  constructor(private readonly options: SessionRegistryOptions = {}) {}
 
   public get onDidChangeState(): vscode.Event<void> {
     return this.onDidChangeStateEmitter.event;
@@ -254,7 +258,7 @@ export class SessionRegistry implements vscode.Disposable {
         continue;
       }
 
-      const controller = new SessionController(record.sessionId, record.title);
+      const controller = new SessionController(record.sessionId, record.title, this.options);
       controller.restore(this.toRestoreState(record));
 
       const disposable = controller.onDidChangeState(() => {
@@ -309,7 +313,7 @@ export class SessionRegistry implements vscode.Disposable {
     }
 
     const sessionId = requestedSessionId ?? createSessionId();
-    const controller = new SessionController(sessionId, title);
+    const controller = new SessionController(sessionId, title, this.options);
     const disposable = controller.onDidChangeState(() => {
       this.onDidChangeStateEmitter.fire();
     });

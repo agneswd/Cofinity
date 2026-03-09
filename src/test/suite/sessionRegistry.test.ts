@@ -341,4 +341,32 @@ suite('SessionRegistry', () => {
     const resultB = await promiseB;
     assert.equal(resultB.response, 'beta survives');
   });
+
+  test('marks a session interrupted when the agent stops returning after a user response', async () => {
+    const shortTimeoutRegistry = new SessionRegistry({ agentFollowUpTimeoutMs: 20 });
+    const token = new vscode.CancellationTokenSource();
+
+    try {
+      const request = shortTimeoutRegistry.handleToolInvocation({
+        question: 'watch for interruption',
+        requestKind: 'question',
+        token: token.token
+      });
+
+      await waitFor(() => shortTimeoutRegistry.buildManagerSnapshot().sessions.length === 1);
+      const sessionId = shortTimeoutRegistry.buildManagerSnapshot().sessions[0].sessionId;
+
+      shortTimeoutRegistry.selectSession(sessionId);
+      const detail = shortTimeoutRegistry.getSelectedSessionSnapshot();
+      assert.ok(detail?.pendingRequest);
+      shortTimeoutRegistry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'continue');
+      await request;
+
+      await waitFor(() => shortTimeoutRegistry.getSessionSnapshot(sessionId)?.status === 'interrupted', 500);
+      assert.equal(shortTimeoutRegistry.getSessionSnapshot(sessionId)?.status, 'interrupted');
+    } finally {
+      shortTimeoutRegistry.dispose();
+      token.cancel();
+    }
+  });
 });
