@@ -108,7 +108,7 @@ body::-webkit-scrollbar-corner,
 /* ── Layout ─────────────────────────────────────────────── */
 
 .app-shell {
-  --session-sidebar-width: 240px;
+  --session-sidebar-width: 220px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--session-sidebar-width);
   height: 100vh;

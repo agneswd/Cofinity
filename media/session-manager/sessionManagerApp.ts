@@ -75,7 +75,7 @@ export class SessionManagerApp {
   };
   private settingsOpen = false;
   private sidebarCollapsed = false;
-  private sidebarWidth = 240;
+  private sidebarWidth = 220;
   private sidebarAutoHidden = false;
   private viewMode: 'session' | 'global' = 'session';
   private inlineErrorMessage: string | null = null;
@@ -1144,8 +1144,8 @@ export class SessionManagerApp {
 
   private clampSidebarWidth(width: number): number {
     const containerWidth = this.appShell?.getBoundingClientRect().width ?? window.innerWidth;
-    const maxWidth = Math.max(230, Math.min(420, containerWidth - 220));
-    return Math.max(230, Math.min(width, maxWidth));
+    const maxWidth = Math.max(210, Math.min(420, containerWidth - 220));
+    return Math.max(210, Math.min(width, maxWidth));
   }
 
   private beginProcessingIndicator(sessionId: string): void {
