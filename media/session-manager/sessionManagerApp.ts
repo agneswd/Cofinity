@@ -143,7 +143,6 @@ export class SessionManagerApp {
 
         this.sidebarWidth = this.clampSidebarWidth(rect.right - moveEvent.clientX);
         this.applySidebarWidth();
-        this.updateSidebarVisibilityForSize();
       };
 
       const handlePointerUp = () => {
@@ -1144,7 +1143,8 @@ export class SessionManagerApp {
 
   private clampSidebarWidth(width: number): number {
     const containerWidth = this.appShell?.getBoundingClientRect().width ?? window.innerWidth;
-    const maxWidth = Math.max(210, Math.min(420, containerWidth - 220));
+    const maxExpandedWidth = Math.floor((containerWidth - 1) / 2);
+    const maxWidth = Math.max(210, Math.min(420, maxExpandedWidth));
     return Math.max(210, Math.min(width, maxWidth));
   }
 
