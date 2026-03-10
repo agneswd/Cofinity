@@ -6,6 +6,31 @@
   box-sizing: border-box;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background-color: #181818;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #505050;
+  border: 2px solid #181818;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6a6a6a;
+}
+
+::-webkit-scrollbar-corner {
+  background: #181818;
+}
+
 body {
   margin: 0;
   padding: 0;
