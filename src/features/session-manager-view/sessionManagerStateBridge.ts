@@ -27,8 +27,9 @@ export class SessionManagerStateBridge implements vscode.Disposable {
   }
 
   public sync(): void {
+    const initialSnapshot = this.registry.buildManagerSnapshot();
+    this.checkForNewPendingRequests(initialSnapshot.sessions);
     const snapshot = this.registry.buildManagerSnapshot();
-    this.checkForNewPendingRequests(snapshot.sessions);
     this.provider.postSessionsSnapshot(snapshot);
     this.provider.postSessionSnapshot(this.registry.getSelectedSessionSnapshot());
   }
