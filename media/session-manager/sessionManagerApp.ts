@@ -64,7 +64,7 @@ export class SessionManagerApp {
     notificationSoundEnabled: true,
     autoOpenView: 'session',
     autoQueuePrompts: true,
-    enterSends: false,
+    enterSends: true,
     autopilotPrompts: [
       'Continue with your best judgment. You are in autopilot mode.'
     ],

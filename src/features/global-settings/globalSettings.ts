@@ -24,7 +24,7 @@ const DEFAULTS: GlobalSettings = {
   notificationSoundEnabled: true,
   autoOpenView: 'session',
   autoQueuePrompts: true,
-  enterSends: false,
+  enterSends: true,
   autopilotPrompts: DEFAULT_AUTOPILOT_PROMPTS,
   autopilotDelayMinMs: 2000,
   autopilotDelayMaxMs: 5000
