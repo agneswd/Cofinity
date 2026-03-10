@@ -294,6 +294,7 @@ export class SessionManagerApp {
           // Find the title element inside this card and replace with an inline input
           const card = btn.closest('.session-card');
           const titleEl = card?.querySelector('.session-card-title') as HTMLElement | null;
+          const selectButton = card?.querySelector('.session-card-select:not(.session-card-mini)') as HTMLButtonElement | null;
           if (!titleEl) {
             return;
           }
@@ -303,6 +304,9 @@ export class SessionManagerApp {
           input.type = 'text';
           input.value = currentTitle;
           input.className = 'session-rename-input';
+          if (selectButton) {
+            selectButton.disabled = true;
+          }
           titleEl.replaceWith(input);
           input.focus();
           input.select();
@@ -314,6 +318,9 @@ export class SessionManagerApp {
             restored.className = 'session-card-title';
             restored.textContent = newTitle || currentTitle;
             input.replaceWith(restored);
+            if (selectButton) {
+              selectButton.disabled = false;
+            }
             if (newTitle && newTitle !== currentTitle) {
               this.vscode.postMessage({ protocolVersion: 1, type: 'renameSession', sessionId, payload: { newTitle } });
             }
@@ -328,6 +335,9 @@ export class SessionManagerApp {
               restored.className = 'session-card-title';
               restored.textContent = currentTitle;
               input.replaceWith(restored);
+              if (selectButton) {
+                selectButton.disabled = false;
+              }
             }
           });
           input.addEventListener('keyup', (e) => {
