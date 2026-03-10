@@ -247,22 +247,6 @@ export function renderSessionDetail(
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row" title="Automatically open the selected target when a session starts waiting for you.">
-              <span title="Automatically open the selected target when a session starts waiting for you.">Auto-open session panel</span>
-              <label class="setting-toggle">
-                <input id="auto-open-session-checkbox" type="checkbox" ${globalSettings.autoOpenView === 'session' ? 'checked' : ''} />
-                <span class="setting-toggle-track"></span>
-                <span class="setting-toggle-thumb"></span>
-              </label>
-            </label>
-            <label class="setting-row" title="Automatically switch to the global pending view when a session starts waiting for you.">
-              <span title="Automatically switch to the global pending view when a session starts waiting for you.">Auto-open global pending view</span>
-              <label class="setting-toggle">
-                <input id="auto-open-global-checkbox" type="checkbox" ${globalSettings.autoOpenView === 'global' ? 'checked' : ''} />
-                <span class="setting-toggle-track"></span>
-                <span class="setting-toggle-thumb"></span>
-              </label>
-            </label>
             <label class="setting-row" title="Queue composer messages when the agent is not currently waiting for input.">
               <span title="Queue composer messages when the agent is not currently waiting for input.">Queue messages when agent is busy</span>
               <label class="setting-toggle">
@@ -275,6 +259,22 @@ export function renderSessionDetail(
               <span title="Send with Enter. When off, use Ctrl/Cmd+Enter to send.">Press Enter to send</span>
               <label class="setting-toggle">
                 <input id="enter-sends-checkbox" type="checkbox" ${globalSettings.enterSends ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
+            </label>
+            <label class="setting-row" title="Automatically open the selected target when a session starts waiting for you.">
+              <span title="Automatically open the selected target when a session starts waiting for you.">Auto-open session panel</span>
+              <label class="setting-toggle">
+                <input id="auto-open-session-checkbox" type="checkbox" ${globalSettings.autoOpenView === 'session' ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
+            </label>
+            <label class="setting-row" title="Automatically switch to the global pending view when a session starts waiting for you.">
+              <span title="Automatically switch to the global pending view when a session starts waiting for you.">Auto-open global pending view</span>
+              <label class="setting-toggle">
+                <input id="auto-open-global-checkbox" type="checkbox" ${globalSettings.autoOpenView === 'global' ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
