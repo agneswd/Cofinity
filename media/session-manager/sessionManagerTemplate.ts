@@ -247,10 +247,18 @@ export function renderSessionDetail(
                 <span class="setting-toggle-thumb"></span>
               </label>
             </label>
-            <label class="setting-row" title="Automatically open this panel when a session starts waiting for you.">
-              <span title="Automatically open this panel when a session starts waiting for you.">Auto-open session panel</span>
+            <label class="setting-row" title="Automatically open the selected target when a session starts waiting for you.">
+              <span title="Automatically open the selected target when a session starts waiting for you.">Auto-open session panel</span>
               <label class="setting-toggle">
-                <input id="auto-reveal-checkbox" type="checkbox" ${globalSettings.autoRevealEnabled ? 'checked' : ''} />
+                <input id="auto-open-session-checkbox" type="checkbox" ${globalSettings.autoOpenView === 'session' ? 'checked' : ''} />
+                <span class="setting-toggle-track"></span>
+                <span class="setting-toggle-thumb"></span>
+              </label>
+            </label>
+            <label class="setting-row" title="Automatically switch to the global pending view when a session starts waiting for you.">
+              <span title="Automatically switch to the global pending view when a session starts waiting for you.">Auto-open global pending view</span>
+              <label class="setting-toggle">
+                <input id="auto-open-global-checkbox" type="checkbox" ${globalSettings.autoOpenView === 'global' ? 'checked' : ''} />
                 <span class="setting-toggle-track"></span>
                 <span class="setting-toggle-thumb"></span>
               </label>
@@ -272,15 +280,23 @@ export function renderSessionDetail(
               </label>
             </label>
             <div class="settings-section-heading">
-              <div class="settings-section-label" title="These prompts are sent in order whenever autopilot answers for you.">Autopilot reply prompts</div>
+              <div class="settings-section-label" title="Autopilot sends these prompts in order and loops back to the first prompt after the last one.">Autopilot reply prompts</div>
               <button id="autopilot-prompt-add" class="settings-section-add" title="Add a new autopilot prompt" aria-label="Add a new autopilot prompt"><i data-lucide="plus" aria-hidden="true"></i></button>
             </div>
             <div id="autopilot-prompts-list" class="autopilot-prompts-list">
               ${globalSettings.autopilotPrompts.map((prompt, idx) => `
                 <div class="autopilot-prompt-item" data-prompt-index="${idx}" draggable="true" title="Drag to reorder this autopilot prompt.">
                   <div class="autopilot-prompt-number">${idx + 1}</div>
-                  <div class="autopilot-prompt-text">${escapeHtml(prompt)}</div>
-                  <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt" title="Delete this autopilot prompt">&times;</button>
+                  <div class="autopilot-prompt-body">
+                    <div class="autopilot-prompt-text">${escapeHtml(prompt)}</div>
+                    <textarea class="autopilot-prompt-editor is-hidden" data-prompt-index="${idx}" rows="3">${escapeHtml(prompt)}</textarea>
+                  </div>
+                  <div class="autopilot-prompt-actions">
+                    <button class="autopilot-prompt-edit" data-prompt-index="${idx}" title="Edit this autopilot prompt">Edit</button>
+                    <button class="autopilot-prompt-delete" data-prompt-index="${idx}" aria-label="Remove prompt" title="Delete this autopilot prompt">&times;</button>
+                    <button class="autopilot-prompt-save is-hidden" data-prompt-index="${idx}" title="Save this autopilot prompt">Save</button>
+                    <button class="autopilot-prompt-cancel is-hidden" data-prompt-index="${idx}" title="Cancel editing this autopilot prompt">Cancel</button>
+                  </div>
                 </div>
               `).join('')}
             </div>

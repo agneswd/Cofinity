@@ -2,7 +2,7 @@ import type * as vscode from 'vscode';
 
 export interface GlobalSettings {
   notificationSoundEnabled: boolean;
-  autoRevealEnabled: boolean;
+  autoOpenView: 'off' | 'session' | 'global';
   autoQueuePrompts: boolean;
   enterSends: boolean;
   autopilotPrompts: string[];
@@ -13,14 +13,16 @@ export interface GlobalSettings {
 const SETTINGS_KEY = 'cofinity.globalSettings';
 
 const DEFAULT_AUTOPILOT_PROMPTS = [
-  'Continue with your best judgment. You are in autopilot mode.',
-  'Proceed as you see fit. Make any decisions you need to.',
-  'You have my approval. Continue with the task.'
+  'Continue with your best judgment. You are in autopilot mode.'
 ];
+
+type StoredGlobalSettings = Partial<GlobalSettings> & {
+  autoRevealEnabled?: boolean;
+};
 
 const DEFAULTS: GlobalSettings = {
   notificationSoundEnabled: true,
-  autoRevealEnabled: true,
+  autoOpenView: 'session',
   autoQueuePrompts: true,
   enterSends: false,
   autopilotPrompts: DEFAULT_AUTOPILOT_PROMPTS,
@@ -32,10 +34,13 @@ export class GlobalSettingsManager {
   constructor(private readonly globalState: vscode.Memento) {}
 
   public get(): GlobalSettings {
-    const stored = this.globalState.get<Partial<GlobalSettings>>(SETTINGS_KEY, {});
+    const stored = this.globalState.get<StoredGlobalSettings>(SETTINGS_KEY, {});
+    const autoOpenView = stored.autoOpenView ?? (stored.autoRevealEnabled === false ? 'off' : 'session');
+
     return {
       ...DEFAULTS,
       ...stored,
+      autoOpenView,
       autopilotPrompts:
         Array.isArray(stored.autopilotPrompts) && stored.autopilotPrompts.length > 0
           ? stored.autopilotPrompts

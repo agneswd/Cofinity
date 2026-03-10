@@ -32,6 +32,7 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
   public static readonly viewType = 'cofinity.sessionManagerView';
 
   private view?: vscode.WebviewView;
+  private preferredViewMode: 'session' | 'global' = 'session';
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -81,6 +82,7 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       this.postSessionsSnapshot(this.sessionRegistry.buildManagerSnapshot());
       this.postSessionSnapshot(this.sessionRegistry.getSelectedSessionSnapshot());
       this.postGlobalSettings(this.settingsManager.get());
+      this.setViewMode(this.preferredViewMode);
       return;
     }
 
@@ -260,6 +262,15 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
       type: 'openSettings',
       payload: {}
+    });
+  }
+
+  public setViewMode(mode: 'session' | 'global'): void {
+    this.preferredViewMode = mode;
+    this.postMessage({
+      protocolVersion: SESSION_MANAGER_PROTOCOL_VERSION,
+      type: 'setViewMode',
+      payload: { mode }
     });
   }
 

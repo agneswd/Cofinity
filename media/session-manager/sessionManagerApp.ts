@@ -62,13 +62,11 @@ export class SessionManagerApp {
   private session: SessionSnapshot | null = null;
   private globalSettings: GlobalSettings = {
     notificationSoundEnabled: true,
-    autoRevealEnabled: true,
+    autoOpenView: 'session',
     autoQueuePrompts: true,
     enterSends: false,
     autopilotPrompts: [
-      'Continue with your best judgment. You are in autopilot mode.',
-      'Proceed as you see fit. Make any decisions you need to.',
-      'You have my approval. Continue with the task.'
+      'Continue with your best judgment. You are in autopilot mode.'
     ],
     autopilotDelayMinMs: 2000,
     autopilotDelayMaxMs: 5000
@@ -188,6 +186,11 @@ export class SessionManagerApp {
         return;
       case 'globalSettings':
         this.globalSettings = message.payload;
+        this.renderSession();
+        return;
+      case 'setViewMode':
+        this.viewMode = message.payload.mode;
+        this.renderGlobalViewToggle();
         this.renderSession();
         return;
       case 'attachmentsAdded': {
@@ -518,7 +521,8 @@ export class SessionManagerApp {
     const autopilotBarCheckbox = document.getElementById('autopilot-bar-checkbox') as HTMLInputElement | null;
     const autopilotMaxTurns = document.getElementById('autopilot-max-turns') as HTMLInputElement | null;
     const soundCheckbox = document.getElementById('sound-checkbox') as HTMLInputElement | null;
-    const autoRevealCheckbox = document.getElementById('auto-reveal-checkbox') as HTMLInputElement | null;
+    const autoOpenSessionCheckbox = document.getElementById('auto-open-session-checkbox') as HTMLInputElement | null;
+    const autoOpenGlobalCheckbox = document.getElementById('auto-open-global-checkbox') as HTMLInputElement | null;
     const autoQueueCheckbox = document.getElementById('auto-queue-checkbox') as HTMLInputElement | null;
     const enterSendsCheckbox = document.getElementById('enter-sends-checkbox') as HTMLInputElement | null;
     const clearQueueButton = document.getElementById('clear-queue-button') as HTMLButtonElement | null;
@@ -531,6 +535,9 @@ export class SessionManagerApp {
     const addPromptButton = document.getElementById('autopilot-prompt-add') as HTMLButtonElement | null;
     const queueItems = Array.from(document.querySelectorAll<HTMLElement>('.queue-stack-item'));
     const autopilotPromptItems = Array.from(document.querySelectorAll<HTMLElement>('.autopilot-prompt-item'));
+    const autopilotPromptEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.autopilot-prompt-edit'));
+    const autopilotPromptSaveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.autopilot-prompt-save'));
+    const autopilotPromptCancelButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.autopilot-prompt-cancel'));
     const attachmentRemoveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.attachment-chip-remove'));
     const queueEditButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-edit-button'));
     const queueDeleteButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-delete-button'));
@@ -817,7 +824,7 @@ export class SessionManagerApp {
         type: 'updateGlobalSettings',
         payload: {
           notificationSoundEnabled: !!soundCheckbox?.checked,
-          autoRevealEnabled: !!autoRevealCheckbox?.checked,
+          autoOpenView: autoOpenGlobalCheckbox?.checked ? 'global' : autoOpenSessionCheckbox?.checked ? 'session' : 'off',
           autoQueuePrompts: !!autoQueueCheckbox?.checked,
           enterSends: !!enterSendsCheckbox?.checked,
           autopilotPrompts: this.globalSettings.autopilotPrompts,
@@ -828,9 +835,22 @@ export class SessionManagerApp {
     };
 
     soundCheckbox?.addEventListener('change', postSettingsUpdate);
-    autoRevealCheckbox?.addEventListener('change', postSettingsUpdate);
     autoQueueCheckbox?.addEventListener('change', postSettingsUpdate);
     enterSendsCheckbox?.addEventListener('change', postSettingsUpdate);
+
+    autoOpenSessionCheckbox?.addEventListener('change', () => {
+      if (autoOpenSessionCheckbox.checked && autoOpenGlobalCheckbox) {
+        autoOpenGlobalCheckbox.checked = false;
+      }
+      postSettingsUpdate();
+    });
+
+    autoOpenGlobalCheckbox?.addEventListener('change', () => {
+      if (autoOpenGlobalCheckbox.checked && autoOpenSessionCheckbox) {
+        autoOpenSessionCheckbox.checked = false;
+      }
+      postSettingsUpdate();
+    });
 
     const autopilotDelayMinEl = document.getElementById('autopilot-delay-min') as HTMLInputElement | null;
     const autopilotDelayMaxEl = document.getElementById('autopilot-delay-max') as HTMLInputElement | null;
@@ -955,6 +975,94 @@ export class SessionManagerApp {
           type: 'updateGlobalSettings',
           payload: { ...this.globalSettings, autopilotPrompts: nextPrompts }
         });
+      });
+    });
+
+    autopilotPromptEditButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const promptIndex = button.dataset.promptIndex;
+        if (promptIndex === undefined) {
+          return;
+        }
+
+        const promptItem = document.querySelector<HTMLElement>(`.autopilot-prompt-item[data-prompt-index="${promptIndex}"]`);
+        const textElement = promptItem?.querySelector<HTMLElement>('.autopilot-prompt-text');
+        const editor = promptItem?.querySelector<HTMLTextAreaElement>('.autopilot-prompt-editor');
+        const saveButton = promptItem?.querySelector<HTMLButtonElement>('.autopilot-prompt-save');
+        const cancelButton = promptItem?.querySelector<HTMLButtonElement>('.autopilot-prompt-cancel');
+        if (!promptItem || !textElement || !editor || !saveButton || !cancelButton) {
+          return;
+        }
+
+        textElement.classList.add('is-hidden');
+        editor.classList.remove('is-hidden');
+        button.classList.add('is-hidden');
+        saveButton.classList.remove('is-hidden');
+        cancelButton.classList.remove('is-hidden');
+        editor.focus();
+        editor.setSelectionRange(editor.value.length, editor.value.length);
+      });
+    });
+
+    autopilotPromptSaveButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const promptIndex = Number(button.dataset.promptIndex);
+        if (Number.isNaN(promptIndex)) {
+          return;
+        }
+
+        const promptItem = document.querySelector<HTMLElement>(`.autopilot-prompt-item[data-prompt-index="${promptIndex}"]`);
+        const textElement = promptItem?.querySelector<HTMLElement>('.autopilot-prompt-text');
+        const editor = promptItem?.querySelector<HTMLTextAreaElement>('.autopilot-prompt-editor');
+        const editButton = promptItem?.querySelector<HTMLButtonElement>('.autopilot-prompt-edit');
+        const cancelButton = promptItem?.querySelector<HTMLButtonElement>('.autopilot-prompt-cancel');
+        if (!promptItem || !textElement || !editor || !editButton || !cancelButton) {
+          return;
+        }
+
+        const nextPrompt = editor.value.trim();
+        if (!nextPrompt) {
+          return;
+        }
+
+        const nextPrompts = [...this.globalSettings.autopilotPrompts];
+        nextPrompts[promptIndex] = nextPrompt;
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'updateGlobalSettings',
+          payload: { ...this.globalSettings, autopilotPrompts: nextPrompts }
+        });
+
+        textElement.classList.remove('is-hidden');
+        editor.classList.add('is-hidden');
+        editButton.classList.remove('is-hidden');
+        button.classList.add('is-hidden');
+        cancelButton.classList.add('is-hidden');
+      });
+    });
+
+    autopilotPromptCancelButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const promptIndex = Number(button.dataset.promptIndex);
+        if (Number.isNaN(promptIndex)) {
+          return;
+        }
+
+        const promptItem = document.querySelector<HTMLElement>(`.autopilot-prompt-item[data-prompt-index="${promptIndex}"]`);
+        const textElement = promptItem?.querySelector<HTMLElement>('.autopilot-prompt-text');
+        const editor = promptItem?.querySelector<HTMLTextAreaElement>('.autopilot-prompt-editor');
+        const editButton = promptItem?.querySelector<HTMLButtonElement>('.autopilot-prompt-edit');
+        const saveButton = promptItem?.querySelector<HTMLButtonElement>('.autopilot-prompt-save');
+        if (!promptItem || !textElement || !editor || !editButton || !saveButton) {
+          return;
+        }
+
+        editor.value = this.globalSettings.autopilotPrompts[promptIndex] ?? '';
+        textElement.classList.remove('is-hidden');
+        editor.classList.add('is-hidden');
+        editButton.classList.remove('is-hidden');
+        saveButton.classList.add('is-hidden');
+        button.classList.add('is-hidden');
       });
     });
 

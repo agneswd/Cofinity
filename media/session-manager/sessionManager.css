@@ -1549,6 +1549,7 @@ body::-webkit-scrollbar-corner,
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .settings-section-add {
@@ -1587,6 +1588,44 @@ body::-webkit-scrollbar-corner,
 
 .autopilot-prompt-item:last-child {
   border-bottom: none;
+}
+
+.autopilot-prompt-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.autopilot-prompt-editor {
+  width: 100%;
+  border: 1px solid var(--vscode-input-border, var(--vscode-panel-border));
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  font: inherit;
+  padding: 4px 6px;
+  resize: vertical;
+}
+
+.autopilot-prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.autopilot-prompt-edit,
+.autopilot-prompt-save,
+.autopilot-prompt-cancel {
+  border: 0;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.autopilot-prompt-edit:hover,
+.autopilot-prompt-save:hover,
+.autopilot-prompt-cancel:hover {
+  color: var(--vscode-foreground);
 }
 
 .autopilot-prompt-item.is-drag-target {

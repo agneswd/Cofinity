@@ -16,6 +16,7 @@ export type ExtensionToWebviewMessage =
   | ProtocolEnvelope<'sessionsSnapshot', SessionManagerSnapshot>
   | ProtocolEnvelope<'sessionSnapshot', { session: SessionSnapshot | null }>
   | ProtocolEnvelope<'globalSettings', GlobalSettings>
+  | ProtocolEnvelope<'setViewMode', { mode: 'session' | 'global' }>
   | ProtocolEnvelope<'attachmentsAdded', { attachments: AttachmentInfo[] }>
   | ProtocolEnvelope<'imageSaved', { attachment: AttachmentInfo }>
   | ProtocolEnvelope<'error', { message: string }>

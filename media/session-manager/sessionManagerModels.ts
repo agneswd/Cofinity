@@ -8,7 +8,7 @@ export type AttachmentInfo = {
 
 export type GlobalSettings = {
   notificationSoundEnabled: boolean;
-  autoRevealEnabled: boolean;
+  autoOpenView: 'off' | 'session' | 'global';
   autoQueuePrompts: boolean;
   enterSends: boolean;
   autopilotPrompts: string[];
@@ -92,6 +92,7 @@ export type ExtensionMessage =
   | { type: 'sessionsSnapshot'; payload: SessionsSnapshotPayload }
   | { type: 'sessionSnapshot'; payload: SessionSnapshotPayload }
   | { type: 'globalSettings'; payload: GlobalSettings }
+  | { type: 'setViewMode'; payload: { mode: 'session' | 'global' } }
   | { type: 'attachmentsAdded'; payload: { attachments: AttachmentInfo[] } }
   | { type: 'imageSaved'; payload: { attachment: AttachmentInfo } }
   | { type: 'error'; payload: { message: string } }
