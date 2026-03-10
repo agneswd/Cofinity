@@ -76,6 +76,7 @@ export class SessionManagerApp {
   private settingsOpen = false;
   private sidebarCollapsed = false;
   private sidebarWidth = 240;
+  private sidebarAutoHidden = false;
   private viewMode: 'session' | 'global' = 'session';
   private inlineErrorMessage: string | null = null;
   private draggedQueuedPromptId: string | null = null;
@@ -104,11 +105,16 @@ export class SessionManagerApp {
     });
 
     this.sidebarToggleButton?.addEventListener('click', () => {
+      if (this.sidebarAutoHidden) {
+        return;
+      }
+
       this.sidebarCollapsed = !this.sidebarCollapsed;
       this.appShell?.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
       if (!this.sidebarCollapsed) {
         this.applySidebarWidth();
       }
+      this.updateSidebarVisibilityForSize();
     });
 
     this.globalViewToggleButton?.addEventListener('click', () => {
@@ -137,6 +143,7 @@ export class SessionManagerApp {
 
         this.sidebarWidth = this.clampSidebarWidth(rect.right - moveEvent.clientX);
         this.applySidebarWidth();
+        this.updateSidebarVisibilityForSize();
       };
 
       const handlePointerUp = () => {
@@ -153,6 +160,7 @@ export class SessionManagerApp {
       if (!this.sidebarCollapsed) {
         this.applySidebarWidth();
       }
+      this.updateSidebarVisibilityForSize();
     });
 
     this.vscode.postMessage({
@@ -162,6 +170,7 @@ export class SessionManagerApp {
     });
 
     this.applySidebarWidth();
+    this.updateSidebarVisibilityForSize();
     this.renderGlobalViewToggle();
     this.refreshIcons();
   }
@@ -1122,6 +1131,15 @@ export class SessionManagerApp {
     const clampedWidth = this.clampSidebarWidth(this.sidebarWidth);
     this.sidebarWidth = clampedWidth;
     this.appShell?.style.setProperty('--session-sidebar-width', `${clampedWidth}px`);
+  }
+
+  private updateSidebarVisibilityForSize(): void {
+    const containerWidth = this.appShell?.getBoundingClientRect().width ?? window.innerWidth;
+    const effectiveSidebarWidth = this.sidebarCollapsed ? 42 : this.sidebarWidth;
+    const shouldAutoHide = containerWidth - effectiveSidebarWidth <= effectiveSidebarWidth;
+
+    this.sidebarAutoHidden = shouldAutoHide;
+    this.appShell?.classList.toggle('sidebar-auto-hidden', shouldAutoHide);
   }
 
   private clampSidebarWidth(width: number): number {

@@ -120,6 +120,10 @@ body::-webkit-scrollbar-corner,
   grid-template-columns: minmax(0, 1fr) 42px;
 }
 
+.app-shell.sidebar-auto-hidden {
+  grid-template-columns: minmax(0, 1fr) 0;
+}
+
 .session-list-panel {
   position: relative;
   order: 2;
@@ -129,6 +133,12 @@ body::-webkit-scrollbar-corner,
   border-left: 1px solid var(--vscode-panel-border);
   background: var(--vscode-sideBar-background, var(--vscode-editor-background));
   overflow: hidden;
+}
+
+.sidebar-auto-hidden .session-list-panel {
+  border-left: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sidebar-resizer {
