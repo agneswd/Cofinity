@@ -188,8 +188,8 @@ body::-webkit-scrollbar-corner,
 
 .sidebar-topbar {
   flex-shrink: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   border-bottom: 1px solid var(--vscode-panel-border);
 }
 
@@ -207,7 +207,7 @@ body::-webkit-scrollbar-corner,
 }
 
 .sidebar-topbar-button + .sidebar-topbar-button {
-  border-left: 1px solid var(--vscode-panel-border);
+  border-top: 1px solid var(--vscode-panel-border);
 }
 
 .sidebar-topbar-button:hover {
