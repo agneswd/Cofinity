@@ -67,7 +67,6 @@ ${emptyStateMarkup}
       </div>
       <div class="panel-heading">
         <div class="panel-heading-brand">
-          <img class="panel-heading-logo" src="${logoUri}" alt="Cofinity logo" />
           <span>Sessions</span>
         </div>
       </div>
