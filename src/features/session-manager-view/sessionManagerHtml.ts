@@ -61,13 +61,15 @@ ${emptyStateMarkup}
         <button id="sidebar-toggle" class="sidebar-topbar-button sidebar-toggle" aria-label="Toggle sidebar" title="Collapse sidebar">
           <span class="sidebar-toggle-icon" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
         </button>
+        <button id="new-session-button" class="sidebar-topbar-button" aria-label="Start a new Copilot session" title="Start a new Copilot session">
+          <span class="sidebar-topbar-icon" aria-hidden="true"><i data-lucide="plus"></i></span>
+        </button>
       </div>
       <div class="panel-heading">
         <div class="panel-heading-brand">
           <img class="panel-heading-logo" src="${logoUri}" alt="Cofinity logo" />
           <span>Sessions</span>
         </div>
-        <button id="new-session-button" class="panel-heading-action" aria-label="Start a new Copilot session"><i data-lucide="plus"></i><span>New session</span></button>
       </div>
       <div id="sessions-list" class="session-list empty-state">No active sessions yet.</div>
     </aside>
