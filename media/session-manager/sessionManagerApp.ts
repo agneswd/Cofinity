@@ -51,6 +51,7 @@ export class SessionManagerApp {
   private readonly vscode: WebviewApi;
   private readonly sessionsListElement = document.getElementById('sessions-list');
   private readonly sessionDetailElement = document.getElementById('session-detail');
+  private readonly emptyStateLogoSrc = (document.querySelector('.empty-state-logo') as HTMLImageElement | null)?.src ?? '';
   private readonly globalViewToggleButton = document.getElementById('global-view-toggle') as HTMLButtonElement | null;
   private readonly globalViewCountElement = document.getElementById('global-view-count') as HTMLSpanElement | null;
   private readonly sidebarResizer = document.getElementById('sidebar-resizer') as HTMLDivElement | null;
@@ -372,6 +373,7 @@ export class SessionManagerApp {
       this.sessionDetailElement.innerHTML = this.sessions.length === 0
         ? `
           <div class="empty-state-brand">
+            ${this.emptyStateLogoSrc ? `<img class="empty-state-logo" src="${this.emptyStateLogoSrc}" alt="Cofinity logo" />` : ''}
             <span>Start a new session to get started.</span>
             <button id="empty-new-session-button" class="empty-state-action" aria-label="Start a new Copilot session">
               <i data-lucide="plus" aria-hidden="true"></i>
