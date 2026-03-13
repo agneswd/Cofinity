@@ -4,6 +4,7 @@
   "description": "Multi-session human-in-the-loop workflow management for GitHub Copilot tool loops.",
   "version": "0.0.1",
   "publisher": "agneswd",
+  "license": "MIT",
   "icon": "media/cofinity.png",
   "repository": {
     "type": "git",
@@ -124,7 +125,7 @@
     "watch": "node esbuild.mjs --watch",
     "compile": "npm run build",
     "check": "tsc --noEmit",
-    "package:vsix": "npm run build && npx @vscode/vsce package --skip-license",
+    "package:vsix": "npm run build && npx @vscode/vsce package",
     "publish:vsce": "npm run build && npx @vscode/vsce publish",
     "pretest": "npm run build",
     "test": "node ./dist/test/runTest.js"

@@ -5,7 +5,7 @@ import type { GlobalSettings, SessionSnapshot } from '../../../media/session-man
 function createGlobalSettings(): GlobalSettings {
   return {
     notificationSoundEnabled: true,
-    autoRevealEnabled: true,
+    autoOpenView: 'session',
     autoQueuePrompts: true,
     enterSends: true,
     autopilotPrompts: [],
