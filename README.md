@@ -1,5 +1,13 @@
 # Cofinity
 
+> Warning
+> Use at your own risk.
+>
+> GitHub prohibits use of their servers for excessive automated bulk activity or any activity that places undue burden on their infrastructure. Review these before using Cofinity in long-running or highly automated workflows:
+>
+> - GitHub Acceptable Use Policies: https://docs.github.com/en/site-policy/acceptable-use-policies/github-acceptable-use-policies#4-spam-and-inauthentic-activity-on-github
+> - GitHub Copilot Terms: https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features#github-copilot
+
 Cofinity is a VS Code extension that adds a human-in-the-loop workflow for Copilot tool calls.
 
 It gives you a dedicated session manager where multiple agent sessions can wait for input, queue follow-ups, and keep moving without collapsing everything into one shared thread.
