@@ -7,7 +7,7 @@
 
 Cofinity is a VS Code extension that adds a human-in-the-loop workflow for Copilot tool calls.
 
-Its main benefit is that you can push a single premium request much closer to its practical limit, which is where the name Cofinity comes from. It gives you a dedicated session manager where multiple agent sessions can wait for input, queue follow-ups, and keep moving without collapsing everything into one shared thread.
+Its main benefit is that you can push a single premium request much closer to its practical limit (hence the name). It gives you a dedicated session manager where multiple agent sessions can wait for input, queue follow-ups, and keep moving without collapsing everything into one shared thread.
 
 In practice, very long sessions can still degrade over time. After roughly 3+ hours, it is usually better to start a fresh Copilot request.
 
@@ -53,15 +53,13 @@ You should NOT call `requestInput` with just status updates. Always include a qu
 </cofinity_tool_instructions>
 ```
 
-## GPT Models
-
-For GPT models, use TaskSync MCP or Extension.
+## VSCode Settings
 
 Recommended settings for agent mode:
 
 - `"chat.agent.maxRequests": 999`
 - Enable `Bypass Approvals` for uninterrupted agent operation.
-- Be aware sessions beyond 2 hours or 50 tool calls may produce lower-quality results.
+- Be aware sessions beyond 3 hours or 50 tool calls may produce lower-quality results.
 
 ## Quick Start
 
