@@ -282,6 +282,10 @@ body::-webkit-scrollbar-corner,
   overflow: hidden;
 }
 
+.sidebar-collapsed .session-list.empty-state {
+  display: none;
+}
+
 /* Mini view for collapsed cards: dot + first few chars */
 .session-card-mini {
   display: none;
