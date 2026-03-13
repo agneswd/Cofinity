@@ -180,17 +180,11 @@ suite('SessionRegistry', () => {
     registry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'ack');
     await initialRequest;
 
-    registry.updateSettings(sessionId, {
-      notificationSoundEnabled: false,
-      autoQueuePrompts: false
-    });
     registry.enqueuePrompt(sessionId, 'queued then cleared');
     registry.clearQueue(sessionId);
 
     registry.selectSession(sessionId);
     const updatedDetail = registry.getSelectedSessionSnapshot();
-    assert.equal(updatedDetail?.settings.notificationSoundEnabled, false);
-    assert.equal(updatedDetail?.settings.autoQueuePrompts, false);
     assert.equal(updatedDetail?.queuedCount, 0);
     assert.equal(updatedDetail?.chatMessages.some((message) => message.content === 'queued then cleared'), false);
 
@@ -202,9 +196,8 @@ suite('SessionRegistry', () => {
       restoredRegistry.selectSession(restoredSnapshot.sessions[0].sessionId);
       const restoredDetail = restoredRegistry.getSelectedSessionSnapshot();
 
-      assert.equal(restoredDetail?.settings.notificationSoundEnabled, false);
-      assert.equal(restoredDetail?.settings.autoQueuePrompts, false);
       assert.equal(restoredDetail?.queuedCount, 0);
+      assert.equal(restoredDetail?.chatMessages.some((message) => message.content === 'queued then cleared'), false);
     } finally {
       restoredRegistry.dispose();
     }

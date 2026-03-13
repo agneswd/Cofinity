@@ -3,8 +3,16 @@
   "displayName": "Cofinity",
   "description": "Multi-session human-in-the-loop workflow management for GitHub Copilot tool loops.",
   "version": "0.0.1",
-  "publisher": "master",
-  "private": true,
+  "publisher": "agneswd",
+  "icon": "media/cofinity.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agneswd/Cofinity.git"
+  },
+  "homepage": "https://github.com/agneswd/Cofinity",
+  "bugs": {
+    "url": "https://github.com/agneswd/Cofinity/issues"
+  },
   "engines": {
     "vscode": "^1.104.0"
   },
@@ -13,9 +21,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguageModelTool:cofinity_request_input",
-    "onView:cofinity.sessionManagerView",
-    "onCommand:cofinity.openSessionManager"
+    "onLanguageModelTool:cofinity_request_input"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -55,6 +61,7 @@
         {
           "id": "cofinity.sessionManagerView",
           "name": "Session Manager",
+          "icon": "media/cofinity.svg",
           "type": "webview"
         }
       ]
@@ -63,6 +70,10 @@
       {
         "name": "cofinity_request_input",
         "displayName": "Cofinity Request Input",
+        "icon": {
+          "light": "media/cofinity.png",
+          "dark": "media/cofinity.png"
+        },
         "toolReferenceName": "requestInput",
         "canBeReferencedInPrompt": true,
         "userDescription": "Requests the user's next instruction, approval, or clarification for a Cofinity-managed session.",
@@ -74,7 +85,6 @@
         ],
         "inputSchema": {
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "sessionId": {
               "type": "string",
@@ -114,6 +124,8 @@
     "watch": "node esbuild.mjs --watch",
     "compile": "npm run build",
     "check": "tsc --noEmit",
+    "package:vsix": "npm run build && npx @vscode/vsce package --skip-license",
+    "publish:vsce": "npm run build && npx @vscode/vsce publish",
     "pretest": "npm run build",
     "test": "node ./dist/test/runTest.js"
   },
@@ -122,6 +134,7 @@
     "@types/node": "^22.13.10",
     "@types/vscode": "^1.104.0",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
     "esbuild": "^0.25.0",
     "glob": "^11.0.1",
     "mocha": "^11.1.0",
