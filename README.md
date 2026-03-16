@@ -9,7 +9,7 @@ Cofinity is a VS Code extension that adds a human-in-the-loop workflow for Copil
 
 Its main benefit is that you can push a single premium request much closer to its practical limit (hence the name). It gives you a dedicated session manager where multiple agent sessions can wait for input, queue follow-ups, and keep moving without collapsing everything into one shared thread.
 
-In practice, very long sessions can still degrade over time. After roughly 3+ hours, it is usually better to start a fresh Copilot request.
+In practice, very long sessions can still degrade over time. After roughly 3+ hours, it is usually better to start a fresh Copilot request. Context compaction has gotten very good though so experiment with this however you want.
 
 ## What Cofinity Does
 
@@ -22,9 +22,10 @@ In practice, very long sessions can still degrade over time. After roughly 3+ ho
 
 ## Demo
 
-- Demo video placeholder: add main product walkthrough here
-- Demo video placeholder: add global pending view / multi-session workflow here
-- Demo video placeholder: add autopilot / queue workflow here
+- Main product walkthrough:
+
+	<video src="docs/demo/cofinity-demo.mp4" controls muted playsinline width="100%"></video>
+
 
 ## Important
 
