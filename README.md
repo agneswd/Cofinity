@@ -22,7 +22,10 @@ In practice, very long sessions can still degrade over time. After roughly 3+ ho
 
 ## Demo
 
-<video src="docs/demo/cofinity-demo.mp4" controls muted playsinline width="100%"></video>
+https://github.com/user-attachments/assets/b759de10-fd86-4c12-96df-7ba836846165
+
+
+
 
 
 ## Important
