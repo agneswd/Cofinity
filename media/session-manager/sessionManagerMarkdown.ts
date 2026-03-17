@@ -43,15 +43,17 @@ function convertMarkdownLists(text: string): string {
   const output: string[] = [];
   let listBuffer: string[] = [];
 
-  function renderListNode(node: { type: 'ul' | 'ol'; items: Array<{ text: string; children: typeof node[] }>; start: number | null }): string {
+  type ListNode = { type: 'ul' | 'ol'; items: Array<{ text: string; children: ListNode[] }>; start: number | null };
+
+  function renderListNode(node: ListNode): string {
     const startAttr = node.type === 'ol' && typeof node.start === 'number' && node.start > 1 ? ` start="${node.start}"` : '';
     return `<${node.type}${startAttr}>${node.items.map((item) => `<li>${item.text}${item.children.map(renderListNode).join('')}</li>`).join('')}</${node.type}>`;
   }
 
   function processListBuffer(buffer: string[]): string {
     const listItemRegex = /^(\s*)([-*]|\d+\.)\s+(.*)$/;
-    const rootLists: Array<{ type: 'ul' | 'ol'; items: Array<{ text: string; children: any[] }>; start: number | null }> = [];
-    let stack: Array<{ type: 'ul' | 'ol'; list: any; lastItem: any }> = [];
+    const rootLists: ListNode[] = [];
+    let stack: Array<{ type: 'ul' | 'ol'; list: ListNode; lastItem: ListNode['items'][number] | null }> = [];
 
     buffer.forEach((line) => {
       const match = listItemRegex.exec(line);
@@ -71,7 +73,7 @@ function convertMarkdownLists(text: string): string {
 
       let entry = stack[depth];
       if (!entry || entry.type !== type) {
-        const listNode = {
+        const listNode: ListNode = {
           type,
           items: [],
           start: type === 'ol' ? Number.parseInt(marker, 10) : null

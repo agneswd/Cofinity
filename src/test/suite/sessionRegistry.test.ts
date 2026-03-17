@@ -128,6 +128,46 @@ suite('SessionRegistry', () => {
     assert.equal(detailAfterRelease?.chatMessages.at(-1)?.state, 'delivered');
   });
 
+  test('persists awaiting-agent state after a manual response until the next tool turn begins', async () => {
+    const token = new vscode.CancellationTokenSource();
+    const followUpToken = new vscode.CancellationTokenSource();
+
+    const request = registry.handleToolInvocation({
+      question: 'manual reply should keep working state',
+      requestKind: 'question',
+      token: token.token
+    });
+
+    await waitFor(() => registry.buildManagerSnapshot().sessions.length === 1);
+    const sessionId = registry.buildManagerSnapshot().sessions[0].sessionId;
+    const detail = registry.getSessionSnapshot(sessionId);
+    assert.ok(detail?.pendingRequest);
+
+    registry.respondToPendingRequest(sessionId, detail.pendingRequest.requestId, 'user reply');
+    const pendingAgentSnapshot = registry.getSessionSnapshot(sessionId);
+    assert.equal(pendingAgentSnapshot?.awaitingAgentResponse, true);
+
+    const persisted = registry.exportPersistedSessions();
+    assert.equal(persisted[0]?.awaitingAgentResponse, true);
+
+    await request;
+
+    const nextTurn = registry.handleToolInvocation({
+      sessionId,
+      question: 'next turn clears working state',
+      requestKind: 'question',
+      token: followUpToken.token
+    });
+
+    await waitFor(() => registry.getSessionSnapshot(sessionId)?.pendingRequest !== null);
+    assert.equal(registry.getSessionSnapshot(sessionId)?.awaitingAgentResponse, false);
+
+    const followUpDetail = registry.getSessionSnapshot(sessionId);
+    assert.ok(followUpDetail?.pendingRequest);
+    registry.respondToPendingRequest(sessionId, followUpDetail.pendingRequest.requestId, 'second reply');
+    await nextTurn;
+  });
+
   test('supports editing and drag-style reordering for queued prompts', async () => {
     const token = new vscode.CancellationTokenSource();
 

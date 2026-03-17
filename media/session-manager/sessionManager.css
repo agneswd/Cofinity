@@ -615,6 +615,27 @@ body::-webkit-scrollbar-corner,
   background: #181818;
 }
 
+.chat-shell.is-attention-pulse {
+  animation: chat-attention-pulse 1.1s ease-out 1;
+}
+
+@keyframes chat-attention-pulse {
+  0% {
+    box-shadow: inset 0 0 0 0 transparent, 0 0 0 0 transparent;
+  }
+
+  28% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, #ff8a1f 88%, white 12%),
+      0 0 0 3px color-mix(in srgb, #ff8a1f 22%, transparent),
+      0 0 28px 4px color-mix(in srgb, #ff8a1f 34%, transparent);
+  }
+
+  100% {
+    box-shadow: inset 0 0 0 0 transparent, 0 0 0 0 transparent;
+  }
+}
+
 .global-view-detail {
   overflow: hidden;
 }

@@ -119,6 +119,10 @@ function renderWorkingIndicator(session: SessionSnapshot, showProcessingResponse
     return '<div class="working-indicator">Working...</div>';
   }
 
+  if (session.awaitingAgentResponse) {
+    return '<div class="working-indicator">Working...</div>';
+  }
+
   if (session.pendingRequest) {
     return '';
   }

@@ -86,7 +86,9 @@ export class SessionManagerApp {
   private readonly draftAttachmentsBySession = new Map<string, AttachmentInfo[]>();
   private readonly toolCallsBySession = new Map<string, number>();
   private readonly processingResponseBySession = new Map<string, ProcessingIndicatorState>();
-  private readonly processingResponseTimeouts = new Map<string, number>();
+  private readonly seenPendingRequestIds = new Set<string>();
+  private pendingTranscriptScrollReset = false;
+  private pendingChatPulseRequestId: string | null = null;
 
   constructor() {
     this.vscode = acquireVsCodeApi();
@@ -182,17 +184,20 @@ export class SessionManagerApp {
       case 'sessionSnapshot':
         this.reconcileComposerFocus(message.payload.session);
         this.syncProcessingIndicator(message.payload.session);
+        this.updatePendingChatAttention(message.payload.session);
         this.session = message.payload.session;
+        this.pendingTranscriptScrollReset = true;
         this.renderSession();
-        this.scrollTranscriptToBottom();
         return;
       case 'globalSettings':
         this.globalSettings = message.payload;
+        this.pendingTranscriptScrollReset = this.viewMode === 'session' && this.session !== null;
         this.renderSession();
         return;
       case 'setViewMode':
         this.viewMode = message.payload.mode;
         this.renderGlobalViewToggle();
+        this.pendingTranscriptScrollReset = this.viewMode === 'session' && this.session !== null;
         this.renderSession();
         return;
       case 'attachmentsAdded': {
@@ -401,6 +406,12 @@ export class SessionManagerApp {
     this.bindSessionEvents();
     this.bindInlineErrorEvents();
     this.refreshIcons();
+    this.applyPendingChatAttention();
+
+    if (this.pendingTranscriptScrollReset) {
+      this.scrollTranscriptToBottom();
+      this.pendingTranscriptScrollReset = false;
+    }
 
     if (this.composerRefocusAttemptsRemaining > 0) {
       const composerTextarea = document.getElementById('composer-textarea') as HTMLTextAreaElement | null;
@@ -1504,7 +1515,7 @@ export class SessionManagerApp {
   }
 
   private shouldShowProcessingIndicator(session: SessionSnapshot): boolean {
-    return this.processingResponseBySession.has(session.sessionId);
+    return session.awaitingAgentResponse || this.processingResponseBySession.has(session.sessionId);
   }
 
   private renderGlobalViewToggle(): void {
@@ -1552,32 +1563,14 @@ export class SessionManagerApp {
   }
 
   private beginProcessingIndicator(sessionId: string): void {
-    const existingTimeout = this.processingResponseTimeouts.get(sessionId);
-    if (existingTimeout !== undefined) {
-      window.clearTimeout(existingTimeout);
-    }
-
     this.processingResponseBySession.set(sessionId, {
-      baselineMessageCount: this.session?.chatMessages.length ?? 0,
+      baselineMessageCount: this.session?.sessionId === sessionId ? this.session.chatMessages.length : 0,
       startedAtMs: Date.now()
     });
-    const timeoutHandle = window.setTimeout(() => {
-      this.clearProcessingIndicator(sessionId);
-      if (this.session?.sessionId === sessionId) {
-        this.renderSession();
-      }
-    }, 15000);
-
-    this.processingResponseTimeouts.set(sessionId, timeoutHandle);
   }
 
   private clearProcessingIndicator(sessionId: string): void {
     this.processingResponseBySession.delete(sessionId);
-    const existingTimeout = this.processingResponseTimeouts.get(sessionId);
-    if (existingTimeout !== undefined) {
-      window.clearTimeout(existingTimeout);
-      this.processingResponseTimeouts.delete(sessionId);
-    }
   }
 
   private syncProcessingIndicator(session: SessionSnapshot | null): void {
@@ -1590,24 +1583,71 @@ export class SessionManagerApp {
       return;
     }
 
-    const lastMessageRole = session.chatMessages.at(-1)?.role;
-    const hasNewMessages = session.chatMessages.length > state.baselineMessageCount;
-
     if (session.pendingRequest || session.status === 'interrupted') {
       this.clearProcessingIndicator(session.sessionId);
       return;
     }
 
+    if (session.awaitingAgentResponse || session.status === 'running') {
+      return;
+    }
+
+    const lastMessageRole = session.chatMessages.at(-1)?.role;
+    const hasNewMessages = session.chatMessages.length > state.baselineMessageCount;
+
     if (hasNewMessages && (lastMessageRole === 'assistant' || lastMessageRole === 'system')) {
       this.clearProcessingIndicator(session.sessionId);
+      return;
     }
+
+    this.clearProcessingIndicator(session.sessionId);
   }
 
   private scrollTranscriptToBottom(): void {
-    const transcript = document.querySelector('.chat-transcript');
-    if (transcript) {
-      transcript.scrollTop = transcript.scrollHeight;
+    const transcript = this.sessionDetailElement?.querySelector<HTMLElement>('.chat-transcript');
+    if (!transcript) {
+      return;
     }
+
+    const alignToLatest = () => {
+      transcript.scrollTop = transcript.scrollHeight;
+    };
+
+    alignToLatest();
+    window.requestAnimationFrame(() => {
+      alignToLatest();
+      window.requestAnimationFrame(alignToLatest);
+    });
+  }
+
+  private updatePendingChatAttention(session: SessionSnapshot | null): void {
+    const requestId = session?.pendingRequest?.requestId ?? null;
+
+    if (!requestId) {
+      this.pendingChatPulseRequestId = null;
+      return;
+    }
+
+    if (this.seenPendingRequestIds.has(requestId)) {
+      return;
+    }
+
+    this.seenPendingRequestIds.add(requestId);
+    this.pendingChatPulseRequestId = requestId;
+  }
+
+  private applyPendingChatAttention(): void {
+    if (!this.pendingChatPulseRequestId || this.session?.pendingRequest?.requestId !== this.pendingChatPulseRequestId) {
+      return;
+    }
+
+    const chatShell = this.sessionDetailElement?.querySelector<HTMLElement>('.chat-shell');
+    if (!chatShell) {
+      return;
+    }
+
+    chatShell.classList.add('is-attention-pulse');
+    this.pendingChatPulseRequestId = null;
   }
 
   private openSettingsModal(): void {

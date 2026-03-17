@@ -21,6 +21,7 @@ export type SessionListItem = {
   title: string;
   status: string;
   queuedCount: number;
+  awaitingAgentResponse: boolean;
   hasPendingRequest: boolean;
   pendingRequest: null | {
     requestId: string;
@@ -55,6 +56,7 @@ export type SessionSnapshot = {
     attachments?: AttachmentInfo[];
   }>;
   chatMessages: SessionChatMessage[];
+  awaitingAgentResponse: boolean;
   pendingRequest: null | {
     requestId: string;
     prompt: string;

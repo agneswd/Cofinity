@@ -7,5 +7,6 @@ src/**
 package-lock.json
 tsconfig.json
 esbuild.mjs
+issues.txt
 dist/**/*.map
-*.vsix
+dist/test/**

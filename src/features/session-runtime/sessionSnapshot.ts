@@ -20,6 +20,7 @@ export interface SessionListItemSnapshot {
   title: string;
   status: SessionStatus;
   queuedCount: number;
+  awaitingAgentResponse: boolean;
   hasPendingRequest: boolean;
   pendingRequest: PendingUserRequest | null;
   toolCalls: number;
@@ -33,6 +34,7 @@ export interface SessionSnapshot {
   queuedCount: number;
   queuedPrompts: QueuedPromptSnapshot[];
   chatMessages: SessionChatMessage[];
+  awaitingAgentResponse: boolean;
   pendingRequest: PendingUserRequest | null;
   autopilotMode: SessionState['autopilot']['mode'];
   autopilotTurnsUsed: number;
@@ -53,6 +55,7 @@ export function toSessionListItemSnapshot(state: SessionState): SessionListItemS
     title: state.title,
     status: state.status,
     queuedCount: state.promptQueue.length,
+    awaitingAgentResponse: state.awaitingAgentResponse,
     hasPendingRequest: state.pendingRequest !== null,
     pendingRequest: state.pendingRequest,
     toolCalls: state.stats.toolCalls,
@@ -73,6 +76,7 @@ export function toSessionSnapshot(state: SessionState): SessionSnapshot {
       attachments: item.attachments
     })),
     chatMessages: state.chatMessages,
+    awaitingAgentResponse: state.awaitingAgentResponse,
     pendingRequest: state.pendingRequest,
     autopilotMode: state.autopilot.mode,
     autopilotTurnsUsed: state.autopilot.turnsUsed,

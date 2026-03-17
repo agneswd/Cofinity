@@ -18,6 +18,7 @@ export interface PersistedSessionRecord {
   lastActiveAtMs: number;
   title: string;
   status: SessionState['status'];
+  awaitingAgentResponse?: boolean;
   promptQueue: PromptQueueItem[];
   chatMessages: SessionChatMessage[];
   autopilot: AutopilotState;
@@ -38,6 +39,7 @@ function isPersistedSessionRecord(value: unknown): value is PersistedSessionReco
     typeof candidate.lastActiveAtMs === 'number' &&
     typeof candidate.title === 'string' &&
     typeof candidate.status === 'string' &&
+    (candidate.awaitingAgentResponse === undefined || typeof candidate.awaitingAgentResponse === 'boolean') &&
     Array.isArray(candidate.promptQueue) &&
     Array.isArray(candidate.chatMessages) &&
     !!candidate.autopilot &&

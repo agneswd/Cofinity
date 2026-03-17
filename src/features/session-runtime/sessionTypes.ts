@@ -56,6 +56,7 @@ export interface SessionState {
   status: SessionStatus;
   title: string;
   inflight: InflightInvocation | null;
+  awaitingAgentResponse: boolean;
   pendingRequest: PendingUserRequest | null;
   promptQueue: PromptQueueItem[];
   chatMessages: SessionChatMessage[];

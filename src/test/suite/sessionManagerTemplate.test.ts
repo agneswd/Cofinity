@@ -22,6 +22,7 @@ function createSessionSnapshot(overrides: Partial<SessionSnapshot> = {}): Sessio
     queuedCount: 0,
     queuedPrompts: [],
     chatMessages: [],
+    awaitingAgentResponse: false,
     pendingRequest: null,
     autopilotMode: 'off',
     autopilotTurnsUsed: 0,
@@ -54,6 +55,7 @@ suite('sessionManagerTemplate', () => {
     const html = renderSessionDetail(
       createSessionSnapshot({
         status: 'waitingForUser',
+        awaitingAgentResponse: true,
         pendingRequest: {
           requestId: 'request_1',
           prompt: 'Need input',
@@ -65,6 +67,21 @@ suite('sessionManagerTemplate', () => {
       createGlobalSettings(),
       [],
       true
+    );
+
+    assert.match(html, /class="working-indicator"/);
+    assert.match(html, /Working\.\.\./);
+  });
+
+  test('renders a working indicator while waiting on the agent response after submit', () => {
+    const html = renderSessionDetail(
+      createSessionSnapshot({
+        status: 'active',
+        awaitingAgentResponse: true
+      }),
+      false,
+      createGlobalSettings(),
+      []
     );
 
     assert.match(html, /class="working-indicator"/);

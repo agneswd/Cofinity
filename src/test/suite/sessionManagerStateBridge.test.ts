@@ -26,7 +26,7 @@ suite('SessionManagerStateBridge', () => {
     const registry = new SessionRegistry();
     const settings: GlobalSettings = {
       notificationSoundEnabled: false,
-      autoRevealEnabled: true,
+      autoOpenView: 'session',
       autoQueuePrompts: true,
       enterSends: false,
       autopilotPrompts: ['Continue'],
@@ -103,8 +103,15 @@ suite('SessionManagerStateBridge', () => {
       await waitFor(() => registry.getSessionSnapshot(sessionOneId)?.pendingRequest !== null);
       bridge.sync();
 
-      assert.equal(lastSessionsSnapshot?.selectedSessionId, sessionOneId);
-      assert.equal(lastSessionSnapshot?.sessionId, sessionOneId);
+      if (!lastSessionsSnapshot || !lastSessionSnapshot) {
+        throw new Error('Expected the state bridge to publish both snapshots.');
+      }
+
+      const sessionsSnapshot: SessionManagerSnapshot = lastSessionsSnapshot;
+      const sessionSnapshot: SessionSnapshot = lastSessionSnapshot;
+
+      assert.equal(sessionsSnapshot.selectedSessionId, sessionOneId);
+      assert.equal(sessionSnapshot.sessionId, sessionOneId);
     } finally {
       bridge.dispose();
       registry.dispose();

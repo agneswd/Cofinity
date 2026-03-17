@@ -27,6 +27,7 @@ export interface SessionRestoreState {
   lastActiveAtMs: number;
   title: string;
   status: SessionState['status'];
+  awaitingAgentResponse?: boolean;
   promptQueue: PromptQueueItem[];
   chatMessages: SessionChatMessage[];
   autopilot: AutopilotState;
@@ -58,6 +59,7 @@ export class SessionController implements vscode.Disposable {
       status: 'active',
       title,
       inflight: null,
+      awaitingAgentResponse: false,
       pendingRequest: null,
       promptQueue: [],
       chatMessages: [],
@@ -88,6 +90,7 @@ export class SessionController implements vscode.Disposable {
     this.sessionState.lastActiveAtMs = summary.lastActiveAtMs;
     this.sessionState.title = summary.title;
     this.sessionState.status = summary.status;
+    this.sessionState.awaitingAgentResponse = summary.awaitingAgentResponse ?? false;
     this.sessionState.promptQueue = summary.promptQueue;
     this.sessionState.chatMessages = summary.chatMessages;
     this.sessionState.autopilot = summary.autopilot;
@@ -229,6 +232,7 @@ export class SessionController implements vscode.Disposable {
       attachments: attachments.map((attachment) => ({ ...attachment }))
     });
     this.sessionState.pendingRequest = null;
+    this.sessionState.awaitingAgentResponse = true;
     this.touch('running');
     this.onDidChangeStateEmitter.fire();
     return true;
@@ -243,6 +247,7 @@ export class SessionController implements vscode.Disposable {
 
   private async handleRequest(options: RunRequestOptions): Promise<CofinityRequestInputResult> {
     this.sessionState.stats.toolCalls += 1;
+    this.sessionState.awaitingAgentResponse = false;
     this.sessionState.inflight = {
       invocationId: createRequestId(),
       startedAtMs: Date.now(),
@@ -310,6 +315,7 @@ export class SessionController implements vscode.Disposable {
     };
 
     this.sessionState.pendingRequest = pendingRequest;
+    this.sessionState.awaitingAgentResponse = false;
     this.appendChatMessage({
       messageId: createMessageId(),
       role: 'assistant',
@@ -413,6 +419,7 @@ export class SessionController implements vscode.Disposable {
     this.pendingCancellation = null;
     this.pendingResponse = null;
     this.sessionState.pendingRequest = null;
+    this.sessionState.awaitingAgentResponse = false;
   }
 
   private touchPreservingStatus(): void {

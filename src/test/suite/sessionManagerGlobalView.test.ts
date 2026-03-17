@@ -8,6 +8,7 @@ function createPendingSession(overrides: Partial<SessionListItem> = {}): Session
     title: 'Alpha session',
     status: 'waitingForUser',
     queuedCount: 0,
+    awaitingAgentResponse: false,
     hasPendingRequest: true,
     pendingRequest: {
       requestId: 'request_1',
