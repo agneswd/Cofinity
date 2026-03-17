@@ -22,9 +22,7 @@ In practice, very long sessions can still degrade over time. After roughly 3+ ho
 
 ## Demo
 
-- Main product walkthrough:
-
-	<video src="docs/demo/cofinity-demo.mp4" controls muted playsinline width="100%"></video>
+<video src="docs/demo/cofinity-demo.mp4" controls muted playsinline width="100%"></video>
 
 
 ## Important
@@ -64,11 +62,11 @@ Recommended settings for agent mode:
 
 ## Quick Start
 
-1. Run `npm install`
-2. Run `npm run build`
-3. Launch the extension development host from VS Code
-4. Open the Cofinity Activity Bar view
-5. Make sure your agent instructions explicitly tell the model to use the Cofinity tool
+1. Download the latest `.vsix` file from the GitHub Releases page.
+2. In VS Code, run `Extensions: Install from VSIX...`.
+3. Select the downloaded `.vsix` file.
+4. Open the Cofinity Activity Bar view.
+5. Make sure your agent instructions explicitly tell the model to use the Cofinity tool.
 
 ## Credits
 
