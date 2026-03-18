@@ -1,18 +1,8 @@
 import { escapeHtml, formatStatusLabel, formatTime } from './sessionManagerFormat';
 import { renderMarkdown } from './sessionManagerMarkdown';
-import type { SessionListItem } from './sessionManagerModels';
-
-function renderPendingOptions(options?: string[]): string {
-  if (!options || options.length === 0) {
-    return '';
-  }
-
-  return `
-    <div class="global-view-options">
-      ${options.map((option) => `<span class="global-view-option-chip">${escapeHtml(option)}</span>`).join('')}
-    </div>
-  `;
-}
+import { renderPendingOptions } from './sessionManagerTemplate';
+import { renderSettingsModal } from './sessionManagerSettingsModal';
+import type { GlobalSettings, SessionListItem } from './sessionManagerModels';
 
 function renderInlineError(message: string | null): string {
   if (!message) {
@@ -30,7 +20,9 @@ function renderInlineError(message: string | null): string {
 export function renderGlobalPendingView(
   sessions: SessionListItem[],
   draftComposerBySession: ReadonlyMap<string, string>,
-  inlineErrorMessage: string | null = null
+  inlineErrorMessage: string | null = null,
+  settingsOpen = false,
+  globalSettings?: GlobalSettings
 ): string {
   const pendingSessions = sessions.filter(
     (session): session is SessionListItem & { pendingRequest: NonNullable<SessionListItem['pendingRequest']> } => session.pendingRequest !== null
@@ -43,6 +35,7 @@ export function renderGlobalPendingView(
           <span>No pending tool calls right now.</span>
         </div>
       </div>
+      ${globalSettings ? renderSettingsModal(settingsOpen, globalSettings, null) : ''}
     `;
   }
 
@@ -75,7 +68,7 @@ export function renderGlobalPendingView(
                   <div class="global-view-card-meta">${escapeHtml(formatTime(pendingRequest.createdAtMs))}</div>
                 </div>
                 <div class="global-view-prompt markdown-content">${renderMarkdown(pendingRequest.prompt)}</div>
-                ${renderPendingOptions(pendingRequest.options)}
+                ${renderPendingOptions(pendingRequest.options, session.sessionId)}
                 <div class="composer-card global-view-response-card">
                   <div class="composer-row">
                     <textarea
@@ -97,5 +90,6 @@ export function renderGlobalPendingView(
           .join('')}
       </div>
     </div>
+    ${globalSettings ? renderSettingsModal(settingsOpen, globalSettings, null) : ''}
   `;
 }

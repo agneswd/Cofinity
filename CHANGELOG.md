@@ -1,5 +1,13 @@
 # Changelog
 
+## Cofinity v0.0.3 (03-18-26)
+
+- Remembered whether the session manager was last on the global inbox view or the normal session chat when reopening the view.
+- Kept the active view mode synchronized between the webview and extension host so the inbox state survives tab switches.
+- Closed the global inbox view automatically when switching to a different session from the sidebar.
+- Made pending-request options clickable in both the session chat and global inbox views so they send the option text immediately.
+- Removed the queued-prompt clear button to avoid an easy accidental destructive click.
+
 ## Cofinity v0.0.2 (03-17-26)
 
 - Fixed chat reopen behavior so session view reopens pinned to the latest messages instead of resetting to the top.

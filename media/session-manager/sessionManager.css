@@ -744,11 +744,27 @@ body::-webkit-scrollbar-corner,
 }
 
 .global-view-option-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 2px 7px;
   border: 1px solid var(--vscode-panel-border);
   background: transparent;
   color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+  font-family: inherit;
   font-size: 10px;
+  line-height: 1.3;
+}
+
+.global-view-option-chip:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+  color: var(--vscode-foreground);
+}
+
+.global-view-option-chip:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
 }
 
 .global-view-response-card {

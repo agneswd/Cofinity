@@ -25,6 +25,7 @@ export type ExtensionToWebviewMessage =
 export type WebviewToExtensionMessage =
   | ProtocolEnvelope<'uiReady', Record<string, never>>
   | ProtocolEnvelope<'newCopilotSession', Record<string, never>>
+  | ProtocolEnvelope<'setViewMode', { mode: 'session' | 'global' }>
   | ProtocolEnvelope<'openExternal', { url: string }>
   | ProtocolEnvelope<'addAttachment', Record<string, never>>
   | ProtocolEnvelope<'selectSession', { sessionId: string | null }>

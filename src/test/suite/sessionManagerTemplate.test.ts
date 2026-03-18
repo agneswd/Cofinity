@@ -121,4 +121,25 @@ suite('sessionManagerTemplate', () => {
     assert.match(html, /inline-error-dismiss/);
     assert.match(html, /No workspace files available to attach\./);
   });
+
+  test('renders clickable pending options in the session view', () => {
+    const html = renderSessionDetail(
+      createSessionSnapshot({
+        pendingRequest: {
+          requestId: 'request_1',
+          prompt: 'Pick one',
+          kind: 'pick',
+          options: ['Yes', 'No'],
+          createdAtMs: Date.now()
+        }
+      }),
+      false,
+      createGlobalSettings(),
+      []
+    );
+
+    assert.match(html, /pending-option-button/);
+    assert.match(html, /data-pending-option-value="Yes"/);
+    assert.match(html, /data-pending-option-value="No"/);
+  });
 });

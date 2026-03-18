@@ -2,7 +2,7 @@
   "name": "cofinity",
   "displayName": "Cofinity",
   "description": "Multi-session human-in-the-loop workflow management for GitHub Copilot tool loops.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "agneswd",
   "license": "MIT",
   "icon": "media/cofinity.png",

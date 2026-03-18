@@ -3,6 +3,31 @@ import { renderMarkdown } from './sessionManagerMarkdown';
 import type { AttachmentInfo, GlobalSettings, SessionChatMessage, SessionListItem, SessionSnapshot } from './sessionManagerModels';
 import { renderSettingsModal } from './sessionManagerSettingsModal';
 
+export function renderPendingOptions(options?: string[], sessionId?: string): string {
+  if (!options || options.length === 0 || !sessionId) {
+    return '';
+  }
+
+  return `
+    <div class="global-view-options pending-options">
+      ${options
+        .map(
+          (option) => `
+            <button
+              type="button"
+              class="global-view-option-chip pending-option-button"
+              data-pending-option-session-id="${sessionId}"
+              data-pending-option-value="${escapeHtml(option)}"
+            >
+              ${escapeHtml(option)}
+            </button>
+          `
+        )
+        .join('')}
+    </div>
+  `;
+}
+
 function renderChatMessages(messages: SessionChatMessage[]): string {
   if (messages.length === 0) {
     return '<div class="empty-state">No messages yet.</div>';
@@ -85,7 +110,6 @@ function renderQueuedPrompts(session: SessionSnapshot): string {
           <span class="queue-count-badge">${count}</span>
           <span class="queue-collapse-chevron">&#9650;</span>
         </button>
-        <button id="clear-queue-button" class="queue-clear-button" title="Clear all queued prompts" aria-label="Clear queue">&times; Clear</button>
       </div>
       <div class="queue-stack-list">
         ${session.queuedPrompts
@@ -232,6 +256,7 @@ export function renderSessionDetail(
       <section class="chat-transcript">
         ${renderChatMessages(session.chatMessages)}
       </section>
+      ${renderPendingOptions(session.pendingRequest?.options, session.sessionId)}
       ${renderWorkingIndicator(session, showProcessingResponse)}
       ${renderQueuedPrompts(session)}
       ${renderInlineError(inlineErrorMessage)}

@@ -35,6 +35,10 @@ interface ProcessingIndicatorState {
   startedAtMs: number;
 }
 
+interface PersistedState {
+  viewMode?: 'session' | 'global';
+}
+
 const LUCIDE_ICONS = {
   'chevron-left': ChevronLeft,
   inbox: Inbox,
@@ -92,6 +96,11 @@ export class SessionManagerApp {
 
   constructor() {
     this.vscode = acquireVsCodeApi();
+
+    const persistedState = this.vscode.getState() as PersistedState | undefined;
+    if (persistedState?.viewMode === 'session' || persistedState?.viewMode === 'global') {
+      this.viewMode = persistedState.viewMode;
+    }
   }
 
   public start(): void {
@@ -120,9 +129,13 @@ export class SessionManagerApp {
     });
 
     this.globalViewToggleButton?.addEventListener('click', () => {
-      this.viewMode = this.viewMode === 'global' ? 'session' : 'global';
-      this.renderGlobalViewToggle();
-      this.renderSession();
+      const nextMode = this.viewMode === 'global' ? 'session' : 'global';
+      this.applyViewMode(nextMode);
+      this.vscode.postMessage({
+        protocolVersion: 1,
+        type: 'setViewMode',
+        payload: { mode: nextMode }
+      });
     });
 
     this.newSessionButton?.addEventListener('click', () => {
@@ -166,6 +179,12 @@ export class SessionManagerApp {
 
     this.vscode.postMessage({
       protocolVersion: 1,
+      type: 'setViewMode',
+      payload: { mode: this.viewMode }
+    });
+
+    this.vscode.postMessage({
+      protocolVersion: 1,
       type: 'uiReady',
       payload: {}
     });
@@ -195,10 +214,7 @@ export class SessionManagerApp {
         this.renderSession();
         return;
       case 'setViewMode':
-        this.viewMode = message.payload.mode;
-        this.renderGlobalViewToggle();
-        this.pendingTranscriptScrollReset = this.viewMode === 'session' && this.session !== null;
-        this.renderSession();
+        this.applyViewMode(message.payload.mode);
         return;
       case 'attachmentsAdded': {
         if (!this.session) {
@@ -282,6 +298,15 @@ export class SessionManagerApp {
     this.sessionsListElement.querySelectorAll<HTMLButtonElement>('.session-card-select').forEach((btn) => {
       btn.addEventListener('click', () => {
         const sessionId = btn.dataset.sessionId ?? null;
+        if (this.viewMode === 'global') {
+          this.applyViewMode('session', false);
+          this.vscode.postMessage({
+            protocolVersion: 1,
+            type: 'setViewMode',
+            payload: { mode: 'session' }
+          });
+        }
+
         this.vscode.postMessage({ protocolVersion: 1, type: 'selectSession', payload: { sessionId } });
       });
     });
@@ -366,8 +391,15 @@ export class SessionManagerApp {
 
     if (this.viewMode === 'global') {
       this.sessionDetailElement.className = 'session-detail global-view-detail';
-      this.sessionDetailElement.innerHTML = renderGlobalPendingView(this.sessions, this.draftComposerBySession, this.inlineErrorMessage);
+      this.sessionDetailElement.innerHTML = renderGlobalPendingView(
+        this.sessions,
+        this.draftComposerBySession,
+        this.inlineErrorMessage,
+        this.settingsOpen,
+        this.globalSettings
+      );
       this.bindGlobalViewEvents();
+      this.bindSettingsModalEvents(null);
       this.bindInlineErrorEvents();
       this.refreshIcons();
       return;
@@ -428,8 +460,12 @@ export class SessionManagerApp {
           return;
         }
 
-        this.viewMode = 'session';
-        this.renderGlobalViewToggle();
+        this.applyViewMode('session', false);
+        this.vscode.postMessage({
+          protocolVersion: 1,
+          type: 'setViewMode',
+          payload: { mode: 'session' }
+        });
         this.vscode.postMessage({
           protocolVersion: 1,
           type: 'selectSession',
@@ -437,6 +473,8 @@ export class SessionManagerApp {
         });
       });
     });
+
+    this.bindPendingOptionEvents();
 
     this.sessionDetailElement?.querySelectorAll<HTMLTextAreaElement>('.global-view-response-input').forEach((textarea) => {
       const sessionId = textarea.dataset.globalSessionId;
@@ -821,7 +859,6 @@ export class SessionManagerApp {
     const autoOpenGlobalCheckbox = document.getElementById('auto-open-global-checkbox') as HTMLInputElement | null;
     const autoQueueCheckbox = document.getElementById('auto-queue-checkbox') as HTMLInputElement | null;
     const enterSendsCheckbox = document.getElementById('enter-sends-checkbox') as HTMLInputElement | null;
-    const clearQueueButton = document.getElementById('clear-queue-button') as HTMLButtonElement | null;
     const queueCollapseToggle = document.getElementById('queue-collapse-toggle') as HTMLButtonElement | null;
     const autopilotPromptModalBackdrop = document.getElementById('autopilot-prompt-modal-backdrop') as HTMLDivElement | null;
     const autopilotPromptModalClose = document.getElementById('autopilot-prompt-modal-close') as HTMLButtonElement | null;
@@ -839,6 +876,8 @@ export class SessionManagerApp {
     const queueDeleteButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-delete-button'));
     const queueSaveButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-save-button'));
     const queueCancelButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.queue-cancel-button'));
+
+    this.bindPendingOptionEvents();
 
     const currentDraftAttachments = this.draftAttachmentsBySession.get(this.session.sessionId) ?? [];
     const draftComposerValue = this.draftComposerBySession.get(this.session.sessionId) ?? '';
@@ -1181,15 +1220,6 @@ export class SessionManagerApp {
       closeAutopilotPromptModal();
     });
 
-    clearQueueButton?.addEventListener('click', () => {
-      this.vscode.postMessage({
-        protocolVersion: 1,
-        type: 'clearQueue',
-        sessionId: this.session?.sessionId,
-        payload: {}
-      });
-    });
-
     queueItems.forEach((item) => {
       item.addEventListener('dragstart', () => {
         this.draggedQueuedPromptId = item.dataset.itemId ?? null;
@@ -1472,6 +1502,20 @@ export class SessionManagerApp {
     });
   }
 
+  private bindPendingOptionEvents(): void {
+    this.sessionDetailElement?.querySelectorAll<HTMLButtonElement>('.pending-option-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        const sessionId = button.dataset.pendingOptionSessionId;
+        const optionValue = button.dataset.pendingOptionValue;
+        if (!sessionId || !optionValue) {
+          return;
+        }
+
+        this.submitPendingResponse(sessionId, optionValue);
+      });
+    });
+  }
+
   private bindInlineErrorEvents(): void {
     const dismissButton = document.getElementById('inline-error-dismiss') as HTMLButtonElement | null;
     dismissButton?.addEventListener('click', () => {
@@ -1486,6 +1530,33 @@ export class SessionManagerApp {
       type: 'newCopilotSession',
       payload: {}
     });
+  }
+
+  private submitPendingResponse(sessionId: string, content: string): void {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      return;
+    }
+
+    this.vscode.postMessage({
+      protocolVersion: 1,
+      type: 'submitComposerInput',
+      sessionId,
+      payload: {
+        content: trimmedContent,
+        attachments: []
+      }
+    });
+
+    this.beginProcessingIndicator(sessionId);
+    this.draftComposerBySession.set(sessionId, '');
+    this.draftAttachmentsBySession.set(sessionId, []);
+
+    if (this.viewMode === 'session' && this.session?.sessionId === sessionId) {
+      this.requestComposerRefocus();
+    }
+
+    this.renderSession();
   }
 
   private reconcileComposerFocus(nextSession: SessionSnapshot | null): void {
@@ -1538,6 +1609,16 @@ export class SessionManagerApp {
 
     this.globalViewCountElement.classList.remove('is-hidden');
     this.globalViewCountElement.textContent = String(pendingCount);
+  }
+
+  private applyViewMode(mode: 'session' | 'global', renderSession = true): void {
+    this.viewMode = mode;
+    this.vscode.setState({ viewMode: mode });
+    this.renderGlobalViewToggle();
+    this.pendingTranscriptScrollReset = this.viewMode === 'session' && this.session !== null;
+    if (renderSession) {
+      this.renderSession();
+    }
   }
 
   private applySidebarWidth(): void {

@@ -48,6 +48,7 @@ suite('sessionManagerGlobalView', () => {
     assert.match(html, /Need your approval/);
     assert.match(html, /draft response/);
     assert.match(html, /Yes/);
+    assert.match(html, /pending-option-button/);
   });
 
   test('renders an empty state when nothing is waiting', () => {

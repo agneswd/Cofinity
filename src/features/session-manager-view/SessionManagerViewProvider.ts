@@ -99,6 +99,9 @@ export class SessionManagerViewProvider implements vscode.WebviewViewProvider, v
       case 'selectSession':
         this.sessionRegistry.selectSession(message.payload.sessionId);
         return;
+      case 'setViewMode':
+        this.setViewMode(message.payload.mode);
+        return;
       case 'submitComposerInput': {
         if (!message.sessionId) {
           this.postError('Missing sessionId for submitComposerInput.');
