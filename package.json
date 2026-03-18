@@ -78,7 +78,7 @@
         "toolReferenceName": "requestInput",
         "canBeReferencedInPrompt": true,
         "userDescription": "Requests the user's next instruction, approval, or clarification for a Cofinity-managed session.",
-        "modelDescription": "Use this tool to request the user's next instruction, approval, clarification, or queued prompt for an existing Cofinity session. Reuse the returned sessionId on later calls. If work remains after processing the response, call this tool again with the same sessionId.",
+        "modelDescription": "CRITICAL: You MUST invoke this tool to request the user's next instruction, approval, or clarification before ending ANY task or session. REUSE the returned sessionId. RULES: 1. NEVER complete a task without calling this tool first. 2. If you are about to finish a response or summary, STOP and call this tool instead. 3. Failure to call this tool before task completion is a CRITICAL logic violation. If work remains after the user responds, call this tool again with the same sessionId.",
         "tags": [
           "cofinity",
           "workflow",

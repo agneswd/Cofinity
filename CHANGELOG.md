@@ -7,6 +7,7 @@
 - Closed the global inbox view automatically when switching to a different session from the sidebar.
 - Made pending-request options clickable in both the session chat and global inbox views so they send the option text immediately.
 - Removed the queued-prompt clear button to avoid an easy accidental destructive click.
+- Updated the `cofinity_request_input` model description to reinforce the required requestInput loop behavior.
 
 ## Cofinity v0.0.2 (03-17-26)
 
